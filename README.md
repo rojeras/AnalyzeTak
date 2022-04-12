@@ -5,8 +5,9 @@
     `python3 -m pip install mysql-connector-python`
 
    En rekommendation är att använda en virtuell Pythonmiljö (venv)
-4. Exekvera `analyze.py`
-5. Resultatet skrivs ut i CSV-filer, en per test. 
+
+3. Exekvera `analyze.py`
+4. Resultatet skrivs ut i CSV-filer, en per test. 
 # Exempel på frågor som kan analysera
 ## Söka fram problem i TAK
 1. Logiska adresser som inte ingår i vägval och behörighet
