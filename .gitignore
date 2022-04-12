@@ -131,3 +131,5 @@ dmypy.json
 .idea/
 /la_not_part_of_routing.csv
 /sss.csv
+
+*.csv

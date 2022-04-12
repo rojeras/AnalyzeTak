@@ -1,9 +1,11 @@
 SELECT DISTINCT
     -- A.id AS 'Id',
     -- A.integrationsavtal AS 'Integrationsavtal',
-    comp.hsaId AS 'Tjänstekonsument',
+    comp.hsaId AS 'Tjänstekonsument HSA-id',
+    comp.beskrivning AS 'Tjänstekonsument beskrivning',
     tk.namnrymd AS 'Tjänstekontrakt',
-    la.hsaId AS 'Logisk adress'
+    la.hsaId AS 'Logisk adress',
+    la.beskrivning AS 'Logisk adress beskrivning'
     -- A.fromTidpunkt AS 'Fr.o.m tidpunkt',
     -- A.tomTidpunkt AS 'T.o.m tidpunkt'
 FROM
