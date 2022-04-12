@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 .idea/
+/la_not_part_of_routing.csv
+/sss.csv
