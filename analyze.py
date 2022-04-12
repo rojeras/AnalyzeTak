@@ -84,6 +84,39 @@ WHERE
             ab.deleted = 0
         )
     """
+    ],
+
+    [
+        "Anropsbehörigheter till icke existerande vägval.",
+        "autorization_without_a_matching_routing.csv",
+        ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress", "Logisk adress beskrivning"],
+        """
+SELECT DISTINCT
+    comp.hsaId AS 'Tjänstekonsument HSA-id',
+    comp.beskrivning AS 'Tjänstekonsument beskrivning',
+    tk.namnrymd AS 'Tjänstekontrakt',
+    la.hsaId AS 'Logisk adress',
+    la.beskrivning AS 'Logisk adress beskrivning'
+FROM
+    Anropsbehorighet ab,
+    LogiskAdress la,
+    Tjanstekomponent comp,
+    Tjanstekontrakt tk
+WHERE
+  ab.deleted IS NOT NULL
+  AND ab.logiskAdress_id = la.id
+  AND ab.tjanstekonsument_id = comp.id
+  AND ab.tjanstekontrakt_id = tk.id
+  AND la.id NOT IN (
+      SELECT vv.logiskAdress_id
+      FROM Vagval vv
+      WHERE
+        vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
+        AND vv.logiskAdress_id = ab.logiskAdress_id
+    )
+ORDER BY ab.id
+    """
+
     ]
 ]
 
