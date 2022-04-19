@@ -22,7 +22,8 @@ WHERE
       SELECT vv.logiskAdress_id
       FROM Vagval vv
       WHERE
-        vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
+        vv.deleted IS NOT NULL
+        AND vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
         AND vv.logiskAdress_id = ab.logiskAdress_id
     )
 ORDER BY ab.id

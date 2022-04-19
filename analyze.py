@@ -62,30 +62,31 @@ WHERE
     """
     ],
     # ---------------------------------------------------------------------------------------------------
-    [
-        "Logiska adresser som inte förekommer i någon behörighet. Observera att det kan förekomma vid användning av "
-        "standardbehörighet.",
-        "la_not_part_of_authorization.csv",
-        ["Id", "Logisk adress", "Beskrivning"],
-        """
-SELECT
-    la.id,
-    la.hsaId,
-    la.beskrivning
-FROM
-    LogiskAdress la
-WHERE
-    la.deleted = 0
-    AND la.id NOT IN (
-        SELECT
-           ab.logiskAdress_id
-        FROM
-           Anropsbehorighet ab
-        WHERE
-            ab.deleted = 0
-        )
-    """
-    ],
+    # Removed since it might not be an error
+#     [
+#         "Logiska adresser som inte förekommer i någon behörighet. Observera att det kan förekomma vid användning av "
+#         "standardbehörighet.",
+#         "la_not_part_of_authorization.csv",
+#         ["Id", "Logisk adress", "Beskrivning"],
+#         """
+# SELECT
+#     la.id,
+#     la.hsaId, # Addera TK
+#     la.beskrivning
+# FROM
+#     LogiskAdress la
+# WHERE
+#     la.deleted = 0
+#     AND la.id NOT IN (
+#         SELECT
+#            ab.logiskAdress_id
+#         FROM
+#            Anropsbehorighet ab
+#         WHERE
+#             ab.deleted = 0
+#         )
+#     """
+#     ],
 
     # ---------------------------------------------------------------------------------------------------
     [
@@ -114,7 +115,8 @@ WHERE
       SELECT vv.logiskAdress_id
       FROM Vagval vv
       WHERE
-        vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
+      vv.deleted IS NOT NULL
+        AND vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
         AND vv.logiskAdress_id = ab.logiskAdress_id
     )
 ORDER BY ab.id
@@ -172,6 +174,68 @@ WHERE
                 ab.deleted = 0
             )
     """
+    ],
+
+
+    # ---------------------------------------------------------------------------------------------------
+    [
+        "Tjänstekomponenter som inte förekommer i något vägval eller någon anropsbehörighet",
+        "components_not_used.csv",
+        ["Id", "Tjänstekomponentens HSA-id", "Tjänstekomponentens beskrivning"],
+        """
+SELECT
+    comp.id,
+    comp.hsaId,
+    comp.beskrivning
+FROM
+    Tjanstekomponent comp
+WHERE
+    comp.deleted = 0
+    AND comp.id NOT IN (
+        SELECT
+           ad.tjanstekomponent_id
+        FROM
+            Vagval vv,
+            AnropsAdress ad
+        WHERE
+            ad.id = vv.anropsAdress_id
+            AND vv.deleted = 0
+            AND ad.deleted = 0
+        )
+    AND comp.id NOT IN (
+        SELECT
+            ab.tjanstekonsument_id
+        FROM
+            Anropsbehorighet ab
+        WHERE
+            ab.deleted = 0
+    )
+    """
+    ],
+
+
+    # ---------------------------------------------------------------------------------------------------
+    [
+        "URL-er som inte används i något vägval",
+        "url_not_used_in_routing.csv",
+        ["Id", "URL"],
+        """
+SELECT DISTINCT
+    aa.id,
+    aa.adress
+FROM
+    AnropsAdress aa
+WHERE
+    aa.deleted IS NOT NULL
+    AND aa.id NOT IN (
+        SELECT
+           vv.anropsAdress_id
+        FROM Vagval vv
+        WHERE
+            vv.deleted IS NOT NULL
+    )
+ORDER BY aa.adress
+   """
     ]
 
 ]
