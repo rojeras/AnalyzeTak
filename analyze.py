@@ -1,5 +1,6 @@
 import mysql.connector
 import csv
+import sys
 from datetime import datetime
 
 
@@ -11,13 +12,12 @@ def printerr(text):
 ##################################################################################################
 def perform_test(
         conn,
-        description,
-        filename,
+        description: str,
+        filename,  #: Union[str, List[str]],
         header,
         sql
 ):
     """ Create csv file with test results """
-
     cursor = conn.cursor()
     cursor.execute(sql)
     result = cursor.fetchall()
@@ -61,9 +61,10 @@ WHERE
         )
     """
     ],
-
+    # ---------------------------------------------------------------------------------------------------
     [
-        "Logiska adresser som inte förekommer i någon behörighet. Observera att det kan förekomma vid användning av standardbehörighet.",
+        "Logiska adresser som inte förekommer i någon behörighet. Observera att det kan förekomma vid användning av "
+        "standardbehörighet.",
         "la_not_part_of_authorization.csv",
         ["Id", "Logisk adress", "Beskrivning"],
         """
@@ -86,10 +87,12 @@ WHERE
     """
     ],
 
+    # ---------------------------------------------------------------------------------------------------
     [
         "Anropsbehörigheter till icke existerande vägval.",
-        "autorization_without_a_matching_routing.csv",
-        ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress", "Logisk adress beskrivning"],
+        "authorization_without_a_matching_routing.csv",
+        ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress",
+         "Logisk adress beskrivning"],
         """
 SELECT DISTINCT
     comp.hsaId AS 'Tjänstekonsument HSA-id',
@@ -117,7 +120,60 @@ WHERE
 ORDER BY ab.id
     """
 
+    ],
+
+
+    # ---------------------------------------------------------------------------------------------------
+    [
+    "Tjänstekontrakt som inte förekommer i något vägval",
+    "tk_not_part_of_routing.csv",
+    ["Id", "Tjänstekontraktets namnrymd"],
+    """
+
+SELECT
+    tk.id,
+    tk.namnrymd
+FROM
+    Tjanstekontrakt tk
+WHERE
+    tk.deleted = 0
+    AND tk.id NOT IN (
+        SELECT
+           vv.tjanstekontrakt_id
+        FROM
+           Vagval vv
+        WHERE
+            vv.deleted = 0
+        )
+"""
+    ],
+
+
+    # ---------------------------------------------------------------------------------------------------
+    [
+        "Tjänstekontrakt som inte förekommer i någon anropsbehörighet",
+        "tk_not_part_of_authorization.csv",
+        ["Id", "Tjänstekontraktets namnrymd"],
+        """
+    
+    SELECT
+        tk.id,
+        tk.namnrymd
+    FROM
+        Tjanstekontrakt tk
+    WHERE
+        tk.deleted = 0
+        AND tk.id NOT IN (
+            SELECT
+               ab.tjanstekontrakt_id
+            FROM
+               Anropsbehorighet ab
+            WHERE
+                ab.deleted = 0
+            )
+    """
     ]
+
 ]
 
 takdb_connection = mysql.connector.connect(
@@ -128,6 +184,6 @@ takdb_connection = mysql.connector.connect(
 )
 
 for test in test_definitions:
-    perform_test(takdb_connection, test[0], test[1], test[2], test[3] )
+    perform_test(takdb_connection, test[0], test[1], test[2], test[3])
 
 takdb_connection.close()

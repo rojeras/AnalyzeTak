@@ -13,7 +13,7 @@
 1. Logiska adresser som inte ingår i vägval och behörighet
 2. Tjänstekontrakt som inte ingår i vägval och behörighet
 3. Anropsbehörigheter utan matchande vägval
-4. Tjänstekomponenter som inte ingår i något vägval eller behörighet
+4. Tjänstekomponenter som inte ingår i behörighet eller utan anropsadress
 5. Vägval som inte har några anropsbehörigheter
 6. URL-er kopplade till tjänsteproducenter som inte används i något vägval
 7. URL-er som inte når fram till en tjänsteproducent (går lite utanför en ren TAK-utsökning)
