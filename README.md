@@ -16,9 +16,6 @@
 4. Tjänstekomponenter som inte ingår i behörighet eller utan anropsadress
 5. Vägval som inte har några anropsbehörigheter
 6. URL-er kopplade till tjänsteproducenter som inte används i något vägval
-7. URL-er som inte når fram till en tjänsteproducent (går lite utanför en ren TAK-utsökning)
-8. Man kan även jämföra producenters HSA-id med det cert som producenten visar upp mot RTP. Oscar har tagit fram en lista över producenter och HSA-id deras cert. 
-9. Man skulle även kunna titta i statistiktabellen i TPDB för att lista anslutningar som inte används under en periuod (ex senaste året).
 
 ## Tag fram grunddata om TAK-ningar
 1. Antal vägval
@@ -29,3 +26,21 @@
 # Att reda ut
 ## deleted
 Många tabeller har en kolumn vid namn *deleted*. Den verkar innehålla *null* eller *0*. Min tolkning är att *0* innebär att objektet existerar, *null* att det har tagits bort. 
+
+# Utdata
+* CSV-filer som kan läsas in i excel med listor över de problem som identifierats
+* BS-JSON beställningsfiler med de rättningar som kan/bör göras av en TAK
+* Tillhandahålla informationen via en webbsida (generera HTML, kanske använda Python Flask)
+
+# Andra kontroller som skulle kunna implementeras
+
+## Baserat på TAK
+1. URL-er som inte når fram till en tjänsteproducent (går lite utanför en ren TAK-utsökning)
+2. Man kan även jämföra producenters HSA-id med det cert som producenten visar upp mot RTP. Oscar har tagit fram en lista över producenter och HSA-id deras cert.
+
+## Baserat på TAK-api
+Principiellt borde alla kontroller som nu sker mot TAK-databasen kunna ske även via TAK-api. Men, eftersom man då inte skulle kunna jobba med SQL så skulle det bli betydligt mer komplicerat.
+
+## Baserat på TPDB
+1. Man skulle även kunna titta i statistiktabellen i TPDB för att lista anslutningar som inte används under en period (ex senaste året).
+2. I TPDB har vi ju historik information som skulle kunna analyseras och visualiseras.
