@@ -1,6 +1,7 @@
 import mysql.connector
 import csv
 import sys
+import argparse
 from datetime import datetime
 
 
@@ -33,7 +34,49 @@ def perform_test(
 
 
 ##################################################################################################
+#                                 Main Program
+##################################################################################################
+# Parse arguments
+parser = argparse.ArgumentParser()
 
+# analyze_tak.py [-c | --csv] [-j | --json] [-s | --statistics] [-h db_hostname] [-u db_user] [-p db_password] [-d db_dbname]
+# Environment: prod | qa
+# Target: ntjp | rtp
+# Phase: update | remove | rollback
+
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
+group.add_argument("-j", "--json", action="store_true", help="Generate json files")
+group.add_argument("-i", "--information", action="store_true", help="Show statistics information of the TAK")
+parser.add_argument("-s", "--db_server", action="store", help="Name of DB host", default="localhost")
+parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default="TPDB")
+parser.add_argument("-p", "--db_password", action="store", help="DB user password", default="TPDB")
+parser.add_argument("-d", "--db_name", action="store", help="DB name", default="RTP_PROD")
+
+args = parser.parse_args()
+
+# environment = args.environment.lower()
+# target = args.target.lower()
+# phase = args.phase.lower()
+# create_sample = args.sample
+# service_productions_file = args.filename[0]
+
+exit()
+"""
+if (environment not in ARG_ENVIRONMENT or target not in ARG_TARGET or phase not in ARG_PHASE):
+    parser.print_help()
+    exit()
+"""
+
+takdb_connection = mysql.connector.connect(
+    host="localhost",
+    user="TPDB",
+    password="TPDB",
+    database="RTP_PROD"
+)
+
+
+##################################################################################################
 NOW: str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
 test_definitions = [
@@ -240,12 +283,7 @@ ORDER BY aa.adress
 
 ]
 
-takdb_connection = mysql.connector.connect(
-    host="localhost",
-    user="TPDB",
-    password="TPDB",
-    database="RTP_PROD"
-)
+
 
 for test in test_definitions:
     perform_test(takdb_connection, test[0], test[1], test[2], test[3])
