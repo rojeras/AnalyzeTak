@@ -45,11 +45,6 @@ database_default = "TAK20200327"
 
 parser = argparse.ArgumentParser()
 
-# analyze_tak.py [-c | --csv] [-j | --json] [-s | --statistics] [-h db_hostname] [-u db_user] [-p db_password] [-d db_dbname]
-# Environment: prod | qa
-# Target: ntjp | rtp
-# Phase: update | remove | rollback
-
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
 group.add_argument("-j", "--json", action="store_true", help="Generate json files")
@@ -61,13 +56,6 @@ parser.add_argument("-d", "--db_name", action="store", help="DB name", default=d
 
 args = parser.parse_args()
 
-# environment = args.environment.lower()
-# target = args.target.lower()
-# phase = args.phase.lower()
-# create_sample = args.sample
-# service_productions_file = args.filename[0]
-
-# exit()
 """
 if (environment not in ARG_ENVIRONMENT or target not in ARG_TARGET or phase not in ARG_PHASE):
     parser.print_help()
@@ -88,9 +76,6 @@ except Error as e:
         printerr(f'Error connecting to {args.db_name}')
         parser.print_help()
         exit(1)
-
-
-
 
 
 ##################################################################################################

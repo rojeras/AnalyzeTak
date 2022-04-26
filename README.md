@@ -24,6 +24,14 @@
 4. Antal routes
 
 # Att reda ut
+## Todo
+* CSV för URL-er skall även inkludera tjänstekomponent. Dock är det märkligt att samma URL kan representera olika komponenter. Kolla upp varför det blivit så. 
+* Tag även fram sammanställning över antalet olika objekt i TAK-en. Ev tillsammans med antalet fel. 
+* Skriv något om vikten av att kontrollerna sker i rätt ordning.
+* När JSON-filerna implementeras ska det tydligt dokumenteras vad som måste tas bort via TAK-WEB. 
+* När JSON-filerna implementeras bör det även tas fram rollback-filer.
+* ÅÄÖ blir fel i windows. 
+
 ## deleted
 Många tabeller har en kolumn vid namn *deleted*. Den verkar innehålla *null* eller *0*. Min tolkning är att *0* innebär att objektet existerar, *null* att det har tagits bort. 
 
