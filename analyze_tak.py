@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector import Error
 import csv
 import sys
 import argparse
@@ -36,7 +37,12 @@ def perform_test(
 ##################################################################################################
 #                                 Main Program
 ##################################################################################################
-# Parse arguments
+# Defaults
+host_default = "localhost"
+user_default = "TPDB"
+password_default = "TPDB"
+database_default = "TAK20200327"
+
 parser = argparse.ArgumentParser()
 
 # analyze_tak.py [-c | --csv] [-j | --json] [-s | --statistics] [-h db_hostname] [-u db_user] [-p db_password] [-d db_dbname]
@@ -48,10 +54,10 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
 group.add_argument("-j", "--json", action="store_true", help="Generate json files")
 group.add_argument("-i", "--information", action="store_true", help="Show statistics information of the TAK")
-parser.add_argument("-s", "--db_server", action="store", help="Name of DB host", default="localhost")
-parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default="TPDB")
-parser.add_argument("-p", "--db_password", action="store", help="DB user password", default="TPDB")
-parser.add_argument("-d", "--db_name", action="store", help="DB name", default="RTP_PROD")
+parser.add_argument("-s", "--db_server", action="store", help="Name of DB host", default=host_default)
+parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default=user_default)
+parser.add_argument("-p", "--db_password", action="store", help="DB user password", default=password_default)
+parser.add_argument("-d", "--db_name", action="store", help="DB name", default=database_default)
 
 args = parser.parse_args()
 
@@ -61,19 +67,30 @@ args = parser.parse_args()
 # create_sample = args.sample
 # service_productions_file = args.filename[0]
 
-exit()
+# exit()
 """
 if (environment not in ARG_ENVIRONMENT or target not in ARG_TARGET or phase not in ARG_PHASE):
     parser.print_help()
     exit()
 """
 
-takdb_connection = mysql.connector.connect(
-    host="localhost",
-    user="TPDB",
-    password="TPDB",
-    database="RTP_PROD"
-)
+try:
+    takdb_connection = mysql.connector.connect(
+        host=args.db_server,
+        user=args.db_user,
+        password=args.db_password,
+        database=args.db_name
+    )
+    if takdb_connection.is_connected():
+        printerr(f'Connected to {args.db_name}')
+
+except Error as e:
+        printerr(f'Error connecting to {args.db_name}')
+        parser.print_help()
+        exit(1)
+
+
+
 
 
 ##################################################################################################
