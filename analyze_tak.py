@@ -37,7 +37,6 @@ parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
 group.add_argument("-j", "--json", action="store_true", help="Generate json files")
-group.add_argument("-i", "--information", action="store_true", help="Show statistics information of the TAK")
 parser.add_argument("-s", "--db_server", action="store", help="Name of DB host", default=host_default)
 parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default=user_default)
 parser.add_argument("-p", "--db_password", action="store", help="DB user password", default=password_default)
@@ -281,10 +280,10 @@ ORDER BY aa.adress
 
 
 summary_file = "summary.csv"
-f = open(summary_file, 'w', newline='')
+f = open(summary_file, 'w', newline='', encoding='utf-8')
 f.write(f"TAK-information genererad {JUST_NOW}\n")
 f.close
-f = open(summary_file, 'a', newline='')
+f = open(summary_file, 'a', newline='', encoding='utf-8')
 
 show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
 show_db_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
@@ -297,9 +296,10 @@ for item in test_cases:
     item.summary_report(takdb_connection, f)
 
 f.close
-print(f"Summary information above is written to {summary_file}")
+printerr(f"Summary information above is written to {summary_file}")
 
-for item in test_cases:
-    item.generate_csv(takdb_connection)
+if args.csv:
+    for item in test_cases:
+        item.generate_csv(takdb_connection)
 
 takdb_connection.close()
