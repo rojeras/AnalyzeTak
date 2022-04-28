@@ -1,3 +1,4 @@
+# coding=utf-8
 import mysql.connector
 from mysql.connector import Error
 import csv
@@ -12,26 +13,14 @@ def printerr(text):
 
 
 ##################################################################################################
-def perform_test(
-        conn,
-        description: str,
-        filename,  #: Union[str, List[str]],
-        header,
-        sql
-):
-    """ Create csv file with test results """
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    # for x in result:
-    #   print(x)
+def show_db_info(conn, f, table_name, description):
+    sql_stmt = "SELECT COUNT(*) FROM " + table_name
 
-    with open(filename, 'w', newline='') as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerow([description])
-        writer.writerow([f'Genererad, {NOW}'])
-        writer.writerow(header)
-        writer.writerows(result)
+    cursor = conn.cursor()
+    cursor.execute(sql_stmt)
+    result = cursor.fetchone()[0]
+    f.write(f"{description}: {result}\n")
+    print(f"{description}: {result}")
 
 
 ##################################################################################################
@@ -79,16 +68,55 @@ except Error as e:
 
 
 ##################################################################################################
-NOW: str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
+JUST_NOW: str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
-test_definitions = [
+test_cases = []
 
-    [
+class TestCase:
+    def __init__(self, id, description, headings, select_stmt):
+        self.description = description
+        self.id = id
+        self.headings = headings
+        self.select_stmt = select_stmt
+        test_cases.append(self)
+
+    def count_stmt(self):
+        ix = self.select_stmt.index("FROM") - 1
+        tail = self.select_stmt[ix:]
+        return "SELECT COUNT(*)" + tail
+
+    def generate_csv(self, conn):
+        """ Create csv file with test results """
+        cursor = conn.cursor()
+        cursor.execute(self.select_stmt)
+        result = cursor.fetchall()
+
+        filename = self.id + ".csv"
+        printerr(f"Generating {filename}")
+
+        with open(filename, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow([self.description])
+            writer.writerow([f'Genererad, {JUST_NOW}'])
+            writer.writerow(self.headings)
+            writer.writerows(result)
+
+    def summary_report(self, conn, f):
+        """ Return string specifying number of errors """
+        cursor = conn.cursor()
+        cursor.execute(self.count_stmt())
+        result = cursor.fetchone()[0]
+        f.write(f"{self.description}: {result}\n")
+        print(f"{self.description}: {result}")
+
+# =================================================================================================
+
+TestCase(
+        "la_not_part_of_routing",
         "Logiska adresser som inte förekommer i något vägval",
-        "la_not_part_of_routing.csv",
         ["Id", "Logisk adress", "Beskrivning"],
         """
-SELECT
+SELECT DISTINCT 
     la.id,
     la.hsaId,
     la.beskrivning
@@ -104,41 +132,15 @@ WHERE
         WHERE
             vv.deleted = 0
         )
-    """
-    ],
-    # ---------------------------------------------------------------------------------------------------
-    # Removed since it might not be an error
-#     [
-#         "Logiska adresser som inte förekommer i någon behörighet. Observera att det kan förekomma vid användning av "
-#         "standardbehörighet.",
-#         "la_not_part_of_authorization.csv",
-#         ["Id", "Logisk adress", "Beskrivning"],
-#         """
-# SELECT
-#     la.id,
-#     la.hsaId, # Addera TK
-#     la.beskrivning
-# FROM
-#     LogiskAdress la
-# WHERE
-#     la.deleted = 0
-#     AND la.id NOT IN (
-#         SELECT
-#            ab.logiskAdress_id
-#         FROM
-#            Anropsbehorighet ab
-#         WHERE
-#             ab.deleted = 0
-#         )
-#     """
-#     ],
+    """)
 
-    # ---------------------------------------------------------------------------------------------------
-    [
-        "Anropsbehörigheter till icke existerande vägval.",
-        "authorization_without_a_matching_routing.csv",
-        ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress",
-         "Logisk adress beskrivning"],
+
+
+# -----------------------------------------------------------------------------------------
+TestCase(
+    "authorization_without_a_matching_routing",
+    "Anropsbehörigheter till icke existerande vägval.",
+    ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress", "Logisk adress beskrivning"],
         """
 SELECT DISTINCT
     comp.hsaId AS 'Tjänstekonsument HSA-id',
@@ -165,19 +167,17 @@ WHERE
         AND vv.logiskAdress_id = ab.logiskAdress_id
     )
 ORDER BY ab.id
-    """
-
-    ],
+    """)
 
 
     # ---------------------------------------------------------------------------------------------------
-    [
+TestCase(
+    "tk_not_part_of_routing",
     "Tjänstekontrakt som inte förekommer i något vägval",
-    "tk_not_part_of_routing.csv",
     ["Id", "Tjänstekontraktets namnrymd"],
     """
 
-SELECT
+SELECT DISTINCT
     tk.id,
     tk.namnrymd
 FROM
@@ -192,17 +192,14 @@ WHERE
         WHERE
             vv.deleted = 0
         )
-"""
-    ],
-
+""")
 
     # ---------------------------------------------------------------------------------------------------
-    [
-        "Tjänstekontrakt som inte förekommer i någon anropsbehörighet",
-        "tk_not_part_of_authorization.csv",
-        ["Id", "Tjänstekontraktets namnrymd"],
-        """
-    
+TestCase(
+    "tk_not_part_of_authorization",
+    "Tjänstekontrakt som inte förekommer i någon anropsbehörighet",
+    ["Id", "Tjänstekontraktets namnrymd"],
+    """
     SELECT
         tk.id,
         tk.namnrymd
@@ -218,17 +215,15 @@ WHERE
             WHERE
                 ab.deleted = 0
             )
-    """
-    ],
-
+    """)
 
     # ---------------------------------------------------------------------------------------------------
-    [
-        "Tjänstekomponenter som inte förekommer i något vägval eller någon anropsbehörighet",
-        "components_not_used.csv",
-        ["Id", "Tjänstekomponentens HSA-id", "Tjänstekomponentens beskrivning"],
-        """
-SELECT
+TestCase(
+    "components_not_used",
+    "Tjänstekomponenter som inte förekommer i något vägval eller någon anropsbehörighet",
+    ["Id", "Tjänstekomponentens HSA-id", "Tjänstekomponentens beskrivning"],
+    """
+SELECT DISTINCT
     comp.id,
     comp.hsaId,
     comp.beskrivning
@@ -255,16 +250,14 @@ WHERE
         WHERE
             ab.deleted = 0
     )
-    """
-    ],
-
+    """)
 
     # ---------------------------------------------------------------------------------------------------
-    [
-        "URL-er som inte används i något vägval",
-        "url_not_used_in_routing.csv",
-        ["Id", "URL"],
-        """
+TestCase(
+    "url_not_used_in_routing",
+    "URL-er som inte används i något vägval",
+    ["Id", "URL", "Tjänsteproducent"],
+    """
 SELECT DISTINCT
     aa.id,
     aa.adress,
@@ -284,14 +277,29 @@ WHERE
             vv.deleted IS NOT NULL
     )
 ORDER BY aa.adress
-   """
-    ]
-
-]
+   """)
 
 
+summary_file = "summary.csv"
+f = open(summary_file, 'w', newline='')
+f.write(f"TAK-information genererad {JUST_NOW}\n")
+f.close
+f = open(summary_file, 'a', newline='')
 
-for test in test_definitions:
-    perform_test(takdb_connection, test[0], test[1], test[2], test[3])
+show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
+show_db_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
+show_db_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
+show_db_info(takdb_connection, f, "Vagval", "Antal vägval")
+show_db_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
+show_db_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
+
+for item in test_cases:
+    item.summary_report(takdb_connection, f)
+
+f.close
+print(f"Summary information above is written to {summary_file}")
+
+for item in test_cases:
+    item.generate_csv(takdb_connection)
 
 takdb_connection.close()

@@ -1,7 +1,8 @@
 SELECT DISTINCT
-    aa.id,
-    aa.adress,
-    tk.hsaId
+    -- aa.id,
+    -- aa.adress,
+    -- tk.hsaId
+    COUNT(*) AS count
 FROM
     AnropsAdress aa,
     Tjanstekomponent tk
