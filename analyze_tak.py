@@ -19,10 +19,23 @@ def show_db_info(conn, f, table_name, description):
     cursor = conn.cursor()
     cursor.execute(sql_stmt)
     result = cursor.fetchone()[0]
-    f.write(f"{description}: {result}\n")
+    f.write(f"{description}; {result}\n")
     print(f"{description}: {result}")
 
 
+##################################################################################################
+def get_json_header(plattform):
+
+    now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
+
+    return {
+        "plattform": plattform,
+        "formatVersion": "1.0",
+        "version": "1",
+        "bestallningsTidpunkt": now,
+        "utforare": "Region Stockholm - Forvaltningsobjekt Informationsinfrastruktur",
+        "genomforandeTidpunkt": now,
+    }
 ##################################################################################################
 #                                 Main Program
 ##################################################################################################
@@ -34,9 +47,10 @@ database_default = "TAK20200327"
 
 parser = argparse.ArgumentParser()
 
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
-group.add_argument("-j", "--json", action="store_true", help="Generate json files")
+parser.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
+parser.add_argument("-i", "--information", action="store_true", help="Generate information summary file")
+parser.add_argument("-j", "--json", action="store_true", help="Generate json files")
+parser.add_argument("-t", "--tpname", action="store", help="TP name")
 parser.add_argument("-s", "--db_server", action="store", help="Name of DB host", default=host_default)
 parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default=user_default)
 parser.add_argument("-p", "--db_password", action="store", help="DB user password", default=password_default)
@@ -44,11 +58,20 @@ parser.add_argument("-d", "--db_name", action="store", help="DB name", default=d
 
 args = parser.parse_args()
 
-"""
-if (environment not in ARG_ENVIRONMENT or target not in ARG_TARGET or phase not in ARG_PHASE):
+if (args.json and args.tpname == None):
+    printerr("tpname must be provided for json files")
     parser.print_help()
     exit()
-"""
+
+TP_NAME: str = ""
+if (args.tpname):
+    TP_NAME = args.tpname.upper()
+
+if not (args.csv or args.json or args.information):
+    printerr("At least one of (-c | -j | -i) must be specified")
+    parser.print_help()
+    exit()
+
 
 try:
     takdb_connection = mysql.connector.connect(
@@ -100,12 +123,23 @@ class TestCase:
             writer.writerow(self.headings)
             writer.writerows(result)
 
+    def generate_json(self, conn, tpname):
+        header = get_json_header(tpname)
+        cursor = conn.cursor()
+        cursor.execute(self.select_stmt)
+        result = cursor.fetchall()
+
+        filename = tpname + "." + self.id + ".remove.json"
+        printerr(f"Generating {filename}")
+
+
+
     def summary_report(self, conn, f):
         """ Return string specifying number of errors """
         cursor = conn.cursor()
         cursor.execute(self.count_stmt())
         result = cursor.fetchone()[0]
-        f.write(f"{self.description}: {result}\n")
+        f.write(f"{self.description}; {result}\n")
         print(f"{self.description}: {result}")
 
 # =================================================================================================
@@ -138,7 +172,7 @@ WHERE
 # -----------------------------------------------------------------------------------------
 TestCase(
     "authorization_without_a_matching_routing",
-    "Anropsbehörigheter till icke existerande vägval.",
+    "Anropsbehörigheter till icke existerande vägval",
     ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress", "Logisk adress beskrivning"],
         """
 SELECT DISTINCT
@@ -278,28 +312,33 @@ WHERE
 ORDER BY aa.adress
    """)
 
+if (args.information):
+    summary_file = "summary.csv"
+    f = open(summary_file, 'w', newline='', encoding='utf-8')
+    f.write(f"TAK-information genererad {JUST_NOW}\n")
+    f.close
+    f = open(summary_file, 'a', newline='', encoding='utf-8')
 
-summary_file = "summary.csv"
-f = open(summary_file, 'w', newline='', encoding='utf-8')
-f.write(f"TAK-information genererad {JUST_NOW}\n")
-f.close
-f = open(summary_file, 'a', newline='', encoding='utf-8')
+    show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
+    show_db_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
+    show_db_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
+    show_db_info(takdb_connection, f, "Vagval", "Antal vägval")
+    show_db_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
+    show_db_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
 
-show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
-show_db_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
-show_db_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
-show_db_info(takdb_connection, f, "Vagval", "Antal vägval")
-show_db_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
-show_db_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
+    for test_case in test_cases:
+        test_case.summary_report(takdb_connection, f)
 
-for item in test_cases:
-    item.summary_report(takdb_connection, f)
+    f.close
+    printerr(f"\nInformation ovan har skrivits ut till {summary_file}")
 
-f.close
-printerr(f"Summary information above is written to {summary_file}")
+if (args.csv):
+    for test_case in test_cases:
+        test_case.generate_csv(takdb_connection)
 
-if args.csv:
-    for item in test_cases:
-        item.generate_csv(takdb_connection)
+if (args.json):
+    for test_case in test_cases:
+        test_case.generate_json(takdb_connection, TP_NAME)
+
 
 takdb_connection.close()

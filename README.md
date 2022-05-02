@@ -30,6 +30,7 @@
 * När JSON-filerna implementeras ska det tydligt dokumenteras vad som måste tas bort via TAK-WEB. 
 * När JSON-filerna implementeras bör det även tas fram rollback-filer.
 * ÅÄÖ blir fel i windows. 
+* Se över rubrikerna i CSV-filerna så att det blir tydligt vilken kolumn i vilken tabell de står för. 
 
 ## Done
 * Tag även fram sammanställning över antalet olika objekt i TAK-en. Ev tillsammans med antalet fel.

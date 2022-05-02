@@ -1,0 +1,30 @@
+{
+  "plattform": "SLL-PROD",
+  "formatVersion": "1.0",
+  "version": "1",
+  "bestallningsTidpunkt": "2022-05-01T03:41:54+0000",
+  "utforare": "Pelle",
+  "kommentar": "Test",
+  "genomforandeTidpunkt": "2022-05-01T03:41:54+0000",
+  "inkludera": {
+    "tjanstekomponenter": [
+    {
+      "hsaId": "123456789",
+      "beskrivning": "En testkomponent"
+    }
+  ],
+    "tjanstekontrakt": [
+      {
+        "namnrymd": "urn:riv:alfa:beta:gamma:ContractResponder:1",
+        "beskrivning": "Ett testkontrakt",
+        "majorVersion": 1
+      }
+    ],
+    "logiskadresser": [
+      {
+        "hsaId": "SE987654321-1234",
+        "beskrivning": "En testadress"
+      }
+    ]
+  }
+}
