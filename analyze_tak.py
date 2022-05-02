@@ -1,4 +1,6 @@
 # coding=utf-8
+import json
+
 import mysql.connector
 from mysql.connector import Error
 import csv
@@ -25,7 +27,6 @@ def show_db_info(conn, f, table_name, description):
 
 ##################################################################################################
 def get_json_header(plattform):
-
     now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
     return {
@@ -36,6 +37,8 @@ def get_json_header(plattform):
         "utforare": "Region Stockholm - Forvaltningsobjekt Informationsinfrastruktur",
         "genomforandeTidpunkt": now,
     }
+
+
 ##################################################################################################
 #                                 Main Program
 ##################################################################################################
@@ -72,7 +75,6 @@ if not (args.csv or args.json or args.information):
     parser.print_help()
     exit()
 
-
 try:
     takdb_connection = mysql.connector.connect(
         host=args.db_server,
@@ -84,15 +86,15 @@ try:
         printerr(f'Connected to {args.db_name}')
 
 except Error as e:
-        printerr(f'Error connecting to {args.db_name}')
-        parser.print_help()
-        exit(1)
-
+    printerr(f'Error connecting to {args.db_name}')
+    parser.print_help()
+    exit(1)
 
 ##################################################################################################
 JUST_NOW: str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
 test_cases = []
+
 
 class TestCase:
     def __init__(self, id, description, headings, select_stmt):
@@ -124,28 +126,59 @@ class TestCase:
             writer.writerows(result)
 
     def generate_json(self, conn, tpname):
-        header = get_json_header(tpname)
 
-        cursor = conn.cursor()
-        cursor.execute(self.select_stmt)
-        result = cursor.fetchall()
-        """ 
+        item_columns_in_answer_set = []
+
+        # Map answer columns for each SELECT to JSON keys
         if self.id == "tk_not_part_of_routing":
-            tjanstekontrakten = []
-            exclude = {}
+            item_list_label = "tjanstekontrakt"
+            item_columns_in_answer_set = [(1, "tjanstekontrakt")]
+        if self.id == "la_not_part_of_routing":
+            item_list_label = "logiskadresser"
+            item_columns_in_answer_set = [(1, "logiskAdress")]
+        if self.id == "tk_not_part_of_authorization":
+            item_list_label = "logiskadresser"
+            item_columns_in_answer_set = [(1, "logiskAdress")]
+        if self.id == "components_not_used":
+            item_list_label = "tjanstekomponenter"
+            item_columns_in_answer_set = [(1, "tjanstekomponent")]
+        if self.id == "authorization_without_a_matching_routing":
+            item_list_label = "anropsbehorigheter"
+            item_columns_in_answer_set = [(0, "logiskAdress"), (2,"tjanstekontrakt"), (3, "tjanstekomponent")]
 
+        if item_columns_in_answer_set:
+            filename = f"{self.id}.{tpname}.remove.json"
+
+            cursor = conn.cursor()
+            cursor.execute(self.select_stmt)
+            result = cursor.fetchall()
+
+            exkludera = {}
+            item_list_list = []
+            header = get_json_header(tpname)
+
+            # Go through all rows in answer from SELECT statement
             for record in result:
-                namespace = record[1]
-                tjanstekontrakt = {
+                # Go through all columns in answer row and map to JSON
+                item_list = {}
+                for column_item in item_columns_in_answer_set:
+                    column = column_item[0]
+                    label = column_item[1]
+                    item = record[column]
+                    item_list[label] = item
 
-                }
-                tjanstekontrakten.append()
-        """
+                # Store the items from a single SELECT row
+                item_list_list.append(item_list)
 
-        filename = tpname + "." + self.id + ".remove.json"
-        printerr(f"Generating {filename}")
+            # Store the group of items under its label
+            exkludera[item_list_label] = item_list_list
+            # Include all items in the header info
+            header["exkludera"] = exkludera
 
-
+            printerr(f"Generating {filename}")
+            f = open(filename, 'w', newline='', encoding='utf-8')
+            f.write(json.dumps(header, ensure_ascii=False))
+            f.close()
 
     def summary_report(self, conn, f):
         """ Return string specifying number of errors """
@@ -153,15 +186,16 @@ class TestCase:
         cursor.execute(self.count_stmt())
         result = cursor.fetchone()[0]
         f.write(f"{self.description}; {result}\n")
-        print(f"{self.description}: {result}")
+        printerr(f"{self.description}: {result}")
+
 
 # =================================================================================================
 
 TestCase(
-        "la_not_part_of_routing",
-        "Logiska adresser som inte förekommer i något vägval",
-        ["Id", "Logisk adress", "Beskrivning"],
-        """
+    "la_not_part_of_routing",
+    "Logiska adresser som inte förekommer i något vägval",
+    ["Id", "Logisk adress", "Beskrivning"],
+    """
 SELECT DISTINCT 
     la.id,
     la.hsaId,
@@ -180,20 +214,19 @@ WHERE
         )
     """)
 
-
-
 # -----------------------------------------------------------------------------------------
 TestCase(
     "authorization_without_a_matching_routing",
     "Anropsbehörigheter till icke existerande vägval",
-    ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress", "Logisk adress beskrivning"],
-        """
-SELECT DISTINCT
-    comp.hsaId AS 'Tjänstekonsument HSA-id',
-    comp.beskrivning AS 'Tjänstekonsument beskrivning',
-    tk.namnrymd AS 'Tjänstekontrakt',
+    ["Tjänstekonsument HSA-id", "Tjänstekonsument beskrivning", "Tjänstekontrakt", "Logisk adress",
+     "Logisk adress beskrivning"],
+    """
+SELECT DISTINCT    
     la.hsaId AS 'Logisk adress',
-    la.beskrivning AS 'Logisk adress beskrivning'
+    la.beskrivning AS 'Logisk adress beskrivning',
+    tk.namnrymd AS 'Tjänstekontrakt',
+    comp.hsaId AS 'Tjänstekonsument HSA-id',
+    comp.beskrivning AS 'Tjänstekonsument beskrivning'
 FROM
     Anropsbehorighet ab,
     LogiskAdress la,
@@ -215,8 +248,7 @@ WHERE
 ORDER BY ab.id
     """)
 
-
-    # ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 TestCase(
     "tk_not_part_of_routing",
     "Tjänstekontrakt som inte förekommer i något vägval",
@@ -240,7 +272,7 @@ WHERE
         )
 """)
 
-    # ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 TestCase(
     "tk_not_part_of_authorization",
     "Tjänstekontrakt som inte förekommer i någon anropsbehörighet",
@@ -263,7 +295,7 @@ TestCase(
             )
     """)
 
-    # ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 TestCase(
     "components_not_used",
     "Tjänstekomponenter som inte förekommer i något vägval eller någon anropsbehörighet",
@@ -298,7 +330,7 @@ WHERE
     )
     """)
 
-    # ---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 TestCase(
     "url_not_used_in_routing",
     "URL-er som inte används i något vägval",
@@ -329,7 +361,7 @@ if (args.information):
     summary_file = "summary.csv"
     f = open(summary_file, 'w', newline='', encoding='utf-8')
     f.write(f"TAK-information genererad {JUST_NOW}\n")
-    f.close
+    f.close()
     f = open(summary_file, 'a', newline='', encoding='utf-8')
 
     show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
@@ -342,7 +374,7 @@ if (args.information):
     for test_case in test_cases:
         test_case.summary_report(takdb_connection, f)
 
-    f.close
+    f.close()
     printerr(f"\nInformation ovan har skrivits ut till {summary_file}")
 
 if (args.csv):
@@ -352,6 +384,5 @@ if (args.csv):
 if (args.json):
     for test_case in test_cases:
         test_case.generate_json(takdb_connection, TP_NAME)
-
 
 takdb_connection.close()
