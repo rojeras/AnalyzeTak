@@ -142,6 +142,9 @@ class TestCase:
         if self.id == "components_not_used":
             item_list_label = "tjanstekomponenter"
             item_columns_in_answer_set = [(1, "tjanstekomponent")]
+        if self.id == "url_not_used_in_routing":
+            item_list_label = "adresser"
+            item_columns_in_answer_set = [(1, "adress")]
         if self.id == "authorization_without_a_matching_routing":
             item_list_label = "anropsbehorigheter"
             item_columns_in_answer_set = [(0, "logiskAdress"), (2,"tjanstekontrakt"), (3, "tjanstekomponent")]
