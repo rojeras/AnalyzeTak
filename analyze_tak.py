@@ -125,9 +125,22 @@ class TestCase:
 
     def generate_json(self, conn, tpname):
         header = get_json_header(tpname)
+
         cursor = conn.cursor()
         cursor.execute(self.select_stmt)
         result = cursor.fetchall()
+        """ 
+        if self.id == "tk_not_part_of_routing":
+            tjanstekontrakten = []
+            exclude = {}
+
+            for record in result:
+                namespace = record[1]
+                tjanstekontrakt = {
+
+                }
+                tjanstekontrakten.append()
+        """
 
         filename = tpname + "." + self.id + ".remove.json"
         printerr(f"Generating {filename}")
