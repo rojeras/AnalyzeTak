@@ -8,6 +8,13 @@
 
 3. Exekvera `analyze.py`
 4. Resultatet skrivs ut i CSV-filer, en per test. 
+
+# Körordning
+1. Oanvända behörigheter
+2. Oanvända vägval
+3. Oanvända URL-er
+4. Övriga oanvända objekt (TK, LA och komponenter).
+
 # Exempel på frågor som kan analysera
 ## Söka fram problem i TAK
 1. Logiska adresser som inte ingår i vägval och behörighet
@@ -25,12 +32,17 @@
 
 # Att reda ut
 ## Todo
-* Lägg med information om plattform (om möjligt) i filnamnet. 
+* Lägg med information om plattform (om möjligt) i filnamnet. I alla filnamn, dvs gör tpname obligatorisk.  
 * Skriv något om vikten av att kontrollerna sker i rätt ordning.
 * När JSON-filerna implementeras ska det tydligt dokumenteras vad som måste tas bort via TAK-WEB. 
 * När JSON-filerna implementeras bör det även tas fram rollback-filer.
 * ÅÄÖ blir fel i windows. 
 * Se över rubrikerna i CSV-filerna så att det blir tydligt vilken kolumn i vilken tabell de står för. 
+* Lyft fram användning av "SE" som ett fel. Även med i `summary.csv.`
+* `authoriztion_without_a_matching_routing`
+  * Skall inte inkludera behörigheter som baseras på SE eller * 
+* Saknas `routing_without_a_matching_authorization`
+  * Tag hänsyn till SE och * på lämpligt sätt.
 
 ## Done
 * Tag även fram sammanställning över antalet olika objekt i TAK-en. Ev tillsammans med antalet fel.
