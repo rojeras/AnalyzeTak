@@ -147,7 +147,7 @@ class TestCase:
             item_columns_in_answer_set = [(1, "adress")]
         if self.id == "authorization_without_a_matching_routing":
             item_list_label = "anropsbehorigheter"
-            item_columns_in_answer_set = [(0, "logiskAdress"), (2,"tjanstekontrakt"), (3, "tjanstekomponent")]
+            item_columns_in_answer_set = [(0, "logiskAdress"), (2,"tjanstekontrakt"), (3, "tjanstekonsument")]
 
         if item_columns_in_answer_set:
             filename = f"{self.id}.{tpname}.remove.json"
