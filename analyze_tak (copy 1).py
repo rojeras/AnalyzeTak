@@ -1,12 +1,12 @@
 # coding=utf-8
 import json
+
 import mysql.connector
 from mysql.connector import Error
 import csv
 import sys
 import argparse
 from datetime import datetime
-from BsJson import BsJson, BsJsonSection
 
 
 ##################################################################################################
@@ -125,9 +125,7 @@ class TestCase:
             writer.writerow(self.headings)
             writer.writerows(result)
 
-
-    """
-def xxxgenerate_json(self, conn, tpname):
+    def generate_json(self, conn, tpname):
 
         item_columns_in_answer_set = []
 
@@ -167,7 +165,10 @@ def xxxgenerate_json(self, conn, tpname):
                 # Go through all columns in answer row and map to JSON
                 item_list = {}
                 for column_item in item_columns_in_answer_set:
-                    if self.id == "tk_not_part_of_routing":
+                    column = column_item[0]
+                    label = column_item[1]
+                    item = record[column]
+                    item_list[label] = item
 
                 # Store the items from a single SELECT row
                 item_list_list.append(item_list)
@@ -181,51 +182,6 @@ def xxxgenerate_json(self, conn, tpname):
             f = open(filename, 'w', newline='', encoding='utf-8')
             f.write(json.dumps(header, ensure_ascii=False))
             f.close()
-    """
-
-
-    def generate_json(self, conn, tpname):
-
-        exclude_section = BsJsonSection()
-        # Map answer columns for each SELECT to JSON keys
-        if self.id == "la_not_part_of_routing":
-            item_list_label = "logiskadresser"
-            item_columns_in_answer_set = [(1, "logiskAdress")]
-        if self.id == "tk_not_part_of_authorization":
-            item_list_label = "logiskadresser"
-            item_columns_in_answer_set = [(1, "logiskAdress")]
-        if self.id == "components_not_used":
-            item_list_label = "tjanstekomponenter"
-            item_columns_in_answer_set = [(1, "tjanstekomponent")]
-        if self.id == "url_not_used_in_routing":
-            item_list_label = "adresser"
-            item_columns_in_answer_set = [(1, "adress")]
-        if self.id == "authorization_without_a_matching_routing":
-            item_list_label = "anropsbehorigheter"
-            item_columns_in_answer_set = [(0, "logiskAdress"), (2, "tjanstekontrakt"), (3, "tjanstekonsument")]
-
-
-        cursor = conn.cursor()
-        cursor.execute(self.select_stmt)
-        result = cursor.fetchall()
-
-        # Go through all rows in answer from SELECT statement
-        for record in result:
-
-            if self.id == "tk_not_part_of_routing" or self.id == "tk_not_part_of_authorization":
-                BsJsonSection.add_contract(exclude_section, record[1], "")
-            elif self.id == "la_not_part_of_routing":
-                BsJsonSection.add_logicalAddress(exclude_section, record[1])
-
-            else:
-                printerr(f"Unknown id in Testcase.generate_json: {self.id}")
-                exit(1)
-
-        content = BsJson(tpname)
-        content.add_section("exclude", exclude_section)
-        filename = f"{self.id}.{tpname}.remove.json"
-        content.print_json(filename)
-
 
     def summary_report(self, conn, f):
         """ Return string specifying number of errors """
