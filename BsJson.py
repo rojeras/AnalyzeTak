@@ -2,10 +2,12 @@ from datetime import datetime
 import json
 import sys
 
+
 # A couple of classes to manage and generate the BS-json files
 
 def printerr(text):
     print(text, file=sys.stderr)
+
 
 class BsJson:
     def __init__(self, plattform, executor="Region Stockholm - Forvaltningsobjekt Informationsinfrastruktur"):
@@ -76,19 +78,22 @@ class BsJsonSection:
         if logicalAddress not in self.logicalAddresses:
             self.logicalAddresses.append(logicalAddress)
 
-    def add_component(self, id, description):
+    def add_component(self, id, *description):
 
         component = {
             "hsaId": id,
             "beskrivning": description
         }
 
+        if description:
+            component["beskrivning"] = description[0]
+
         if component not in self.components:
             self.components.append(component)
 
     def add_contract(self,
                      namespace,
-                     description):
+                     *description):
 
         ix = namespace.rfind(":") + 1
         majorStr = namespace[ix:]
@@ -103,6 +108,23 @@ class BsJsonSection:
 
         if contract not in self.contracts:
             self.contracts.append(contract)
+
+
+    def add_authorization(self,
+                          component: object,
+                          logicalAddress: object,
+                          namespace: object
+                          ) -> object:
+
+        auth = {
+            "tjanstekomponent": component,
+            "logiskAdress": logicalAddress,
+            "tjanstekontrakt": namespace
+        }
+
+        if auth not in self.authorities:
+            self.authorities.append(auth)
+
 
     def add_routing(self,
                     component: object,
@@ -135,4 +157,3 @@ class BsJsonSection:
         }
 
     # """
-

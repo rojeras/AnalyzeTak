@@ -36,15 +36,15 @@
 * Skriv något om vikten av att kontrollerna sker i rätt ordning.
 * När JSON-filerna implementeras ska det tydligt dokumenteras vad som måste tas bort via TAK-WEB. 
 * När JSON-filerna implementeras bör det även tas fram rollback-filer.
-* ÅÄÖ blir fel i windows. 
-* Se över rubrikerna i CSV-filerna så att det blir tydligt vilken kolumn i vilken tabell de står för. 
 * Lyft fram användning av "SE" som ett fel. Även med i `summary.csv.`
-* `authoriztion_without_a_matching_routing`
-  * Skall inte inkludera behörigheter som baseras på SE eller * 
 * Saknas `routing_without_a_matching_authorization`
   * Tag hänsyn till SE och * på lämpligt sätt.
 
 ## Done
+* ÅÄÖ blir fel i windows.
+* `authoriztion_without_a_matching_routing`
+    * Skall inte inkludera behörigheter som baseras på SE eller *
+* Se över rubrikerna i CSV-filerna så att det blir tydligt vilken kolumn i vilken tabell de står för.
 * Tag även fram sammanställning över antalet olika objekt i TAK-en. Ev tillsammans med antalet fel.
 * CSV för URL-er skall även inkludera tjänstekomponent. Dock är det märkligt att samma URL kan representera olika komponenter. Kolla upp varför det blivit så. Lägg även på rubrik för tjänsteproducenten.
 ## deleted
