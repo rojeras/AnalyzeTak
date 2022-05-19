@@ -129,8 +129,8 @@ def define_test_cases():
         LogiskAdress la
     WHERE
         la.deleted IS NOT NULL
-        AND la.hsaId != '*'
-        AND la.hsaId != 'SE'
+        AND la.hsaId <> '*'
+        AND la.hsaId <> 'SE'
         AND la.id NOT IN (
             SELECT
                vv.logiskAdress_id
@@ -161,6 +161,8 @@ def define_test_cases():
     WHERE
       ab.deleted IS NOT NULL
       AND ab.logiskAdress_id = la.id
+      AND la.hsaId <> '*'
+      AND la.hsaId <> 'SE'
       AND ab.tjanstekonsument_id = comp.id
       AND ab.tjanstekontrakt_id = tk.id
       AND la.id NOT IN (
@@ -240,8 +242,8 @@ def define_test_cases():
                 AnropsAdress ad
             WHERE
                 ad.id = vv.anropsAdress_id
-                AND vv.deleted = 0
-                AND ad.deleted = 0
+                AND vv.deleted IS NOT NULL
+                AND ad.deleted IS NOT NULL
             )
         AND comp.id NOT IN (
             SELECT
