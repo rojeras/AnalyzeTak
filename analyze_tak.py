@@ -51,7 +51,7 @@ class TestCase:
         result = cursor.fetchall()
         headings = [i[0] for i in cursor.description]
 
-        filename = self.id + ".csv"
+        filename = f"{self.id}.{TP_NAME}.csv"
         printerr(f"Generating {filename}")
 
         with open(filename, 'w', newline='') as csv_file:
@@ -102,7 +102,7 @@ class TestCase:
 
         content = BsJson(tpname)
         content.add_section("exclude", exclude_section)
-        filename = f"{self.id}.{tpname}.remove.json"
+        filename = f"{self.id}.{tpname}.json"
         content.print_json(filename)
 
 
@@ -152,7 +152,7 @@ def define_test_cases():
         comp.beskrivning AS 'Tjänstekonsument beskrivning',
         la.hsaId AS 'Logisk adress',
         la.beskrivning AS 'Logisk adress beskrivning',
-        tk.namnrymd AS 'Tjänstekontrakt'
+        tk.namnrymd AS 'Tjänstekontrakt namnrymd'
     FROM
         Anropsbehorighet ab,
         LogiskAdress la,
@@ -283,7 +283,7 @@ def create_summary_file():
 
     now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
-    summary_file = "summary.csv"
+    summary_file = f"summary.{TP_NAME}.csv"
     f = open(summary_file, 'w', newline='', encoding='utf-8')
     f.write(f"TAK-information genererad {now}\n")
     f.close()
@@ -315,32 +315,31 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
 parser.add_argument("-i", "--information", action="store_true", help="Generate information summary file")
 parser.add_argument("-j", "--json", action="store_true", help="Generate json files")
-parser.add_argument("-t", "--tpname", action="store", help="TP name")
-parser.add_argument("-s", "--db_server", action="store", help="Name of DB host", default=host_default)
+parser.add_argument("-t", "--tpname", action="store", help='TP name, must end with "_PROD", "_QA" or "_TEST', required=True)
+parser.add_argument("-s", "--server", action="store", help="Name of DB host", default=host_default)
 parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default=user_default)
 parser.add_argument("-p", "--db_password", action="store", help="DB user password", default=password_default)
 parser.add_argument("-d", "--db_name", action="store", help="DB name", default=database_default)
 
 args = parser.parse_args()
 
-if (args.json and args.tpname == None):
-    printerr("tpname must be provided for json files")
-    parser.print_help()
-    exit()
 
-TP_NAME: str = ""
-if args.tpname:
-    TP_NAME = args.tpname.upper()
+# ------------------------------------------------------------------------------------------
+TP_NAME = args.tpname.upper()
+
+if not (TP_NAME.endswith("_PROD") or TP_NAME.endswith("_QA") or TP_NAME.endswith("_TEST")):
+    printerr('tpname name must end with "_PROD", "_QA" or "_TEST')
+    exit(1)
 
 if not (args.csv or args.json or args.information):
     printerr("At least one of (-c | -j | -i) must be specified")
     parser.print_help()
-    exit()
+    exit(1)
 
-
+# ------------------------------------------------------------------------------------------
 try:
     takdb_connection = mysql.connector.connect(
-        host=args.db_server,
+        host=args.server,
         user=args.db_user,
         password=args.db_password,
         database=args.db_name
@@ -353,6 +352,7 @@ except Error as e:
     parser.print_help()
     exit(1)
 
+# ------------------------------------------------------------------------------------------
 define_test_cases()
 
 if (args.information):
