@@ -69,7 +69,7 @@ class BsJsonSection:
                            *description):
 
         logicalAddress = {
-            "hsaId": id,
+            "hsaId": id
         }
 
         if description:
@@ -81,8 +81,7 @@ class BsJsonSection:
     def add_component(self, id, *description):
 
         component = {
-            "hsaId": id,
-            "beskrivning": description
+            "hsaId": id
         }
 
         if description:
@@ -104,7 +103,7 @@ class BsJsonSection:
             "majorVersion": major
         }
         if description:
-            contract["beskrivning"] = description
+            contract["beskrivning"] = description[0]
 
         if contract not in self.contracts:
             self.contracts.append(contract)
