@@ -15,7 +15,6 @@ def printerr(text):
 
 ##################################################################################################
 def show_db_info(conn, f, table_name, description):
-
     sql_stmt = "SELECT COUNT(*) FROM " + table_name
 
     cursor = conn.cursor()
@@ -27,7 +26,6 @@ def show_db_info(conn, f, table_name, description):
 
 ##################################################################################################
 class TestCase:
-
     test_cases = []
 
     def __init__(self, id, description, select_stmt):
@@ -61,7 +59,6 @@ class TestCase:
             writer.writerow(headings)
             writer.writerows(result)
 
-
     def generate_json(self, conn, tpname):
 
         if self.id == "url_not_used_in_routing":
@@ -94,17 +91,21 @@ class TestCase:
                                                 record[3],
                                                 record[5]
                                                 )
-
-
+            elif self.id == "routing_without_a_matching_authorization":
+                BsJsonSection.add_routing(exclude_section,
+                                          record[4],
+                                          None,
+                                          record[1],
+                                          record[3]
+                                          )
             else:
-                printerr(f"Unknown id in Testcase.generate_json: {self.id}")
+                printerr(f"\nERROR: Unknown id in Testcase.generate_json: {self.id}")
                 exit(1)
 
         content = BsJson(tpname)
         content.add_section("exclude", exclude_section)
         filename = f"{self.id}.{tpname}.json"
         content.print_json(filename)
-
 
     def summary_report(self, conn, f):
         """ Return string specifying number of errors """
@@ -117,31 +118,8 @@ class TestCase:
 
 def define_test_cases():
 
-    TestCase(
-        "la_not_part_of_routing",
-        "Logiska adresser som inte förekommer i något vägval",
-        """
-    SELECT DISTINCT 
-        la.id AS 'LogiskAdress ID',
-        la.hsaId AS 'Logisk adress',
-        la.beskrivning AS 'Beskrivning'
-    FROM
-        LogiskAdress la
-    WHERE
-        la.deleted IS NOT NULL
-        AND la.hsaId <> '*'
-        AND la.hsaId <> 'SE'
-        AND la.id NOT IN (
-            SELECT
-               vv.logiskAdress_id
-            FROM
-               Vagval vv
-            WHERE
-                vv.deleted = 0
-            )
-        """)
+    # ---------------------------------------------------------------------------------------------------
 
-    # -----------------------------------------------------------------------------------------
     TestCase(
         "authorization_without_a_matching_routing",
         "Anropsbehörigheter till icke existerande vägval",
@@ -178,26 +156,62 @@ def define_test_cases():
 
     # ---------------------------------------------------------------------------------------------------
     TestCase(
-        "tk_not_part_of_routing",
-        "Tjänstekontrakt som inte förekommer i något vägval",
+        "routing_without_a_matching_authorization",
+        "Vägval som saknar anropsbehörigheter",
         """
+    SELECT DISTINCT vv.id            AS 'Vagval ID',
+                la.hsaId         AS 'Logisk adress',
+                la.beskrivning   AS 'Logisk adress beskrivning',
+                tk.namnrymd      AS 'Tjänstekontrakt namnrymd',
+                comp.hsaId       AS 'Tjänsteproducentens HSA-id',
+                comp.beskrivning AS 'Tjänsteproducentens beskrivning'
+    FROM Vagval vv,
+         LogiskAdress la,
+         Tjanstekomponent comp,
+         Tjanstekontrakt tk,
+         AnropsAdress aa
+    WHERE vv.deleted IS NOT NULL
+      AND vv.logiskAdress_id = la.id
+      AND vv.anropsAdress_id = aa.id
+      AND aa.tjanstekomponent_id = comp.id
+      AND vv.tjanstekontrakt_id = tk.id
+      AND vv.tjanstekontrakt_id NOT IN (SELECT DISTINCT ab.tjanstekontrakt_id
+                                        FROM Anropsbehorighet ab,
+                                             LogiskAdress la2
+                                        WHERE ab.deleted IS NOT NULL
+                                          AND ab.tjanstekontrakt_id = vv.tjanstekontrakt_id
+                                          AND ab.logiskAdress_id = la2.id
+                                          AND (
+                                                    ab.logiskAdress_id = vv.logiskAdress_id
+                                                OR la2.hsaId =  '*'
+                                                OR la2.hsaId = 'SE'))
     
-    SELECT DISTINCT
-        tk.id AS 'Tjanstekontrakt ID',
-        tk.namnrymd AS 'Namnrymd'
+    
+    ORDER BY vv.id    
+        """)
+    TestCase(
+        "la_not_part_of_routing",
+        "Logiska adresser som inte förekommer i något vägval",
+        """
+    SELECT DISTINCT 
+        la.id AS 'LogiskAdress ID',
+        la.hsaId AS 'Logisk adress',
+        la.beskrivning AS 'Beskrivning'
     FROM
-        Tjanstekontrakt tk
+        LogiskAdress la
     WHERE
-        tk.deleted IS NOT NULL
-        AND tk.id NOT IN (
+        la.deleted IS NOT NULL
+        AND la.hsaId <> '*'
+        AND la.hsaId <> 'SE'
+        AND la.id NOT IN (
             SELECT
-               vv.tjanstekontrakt_id
+               vv.logiskAdress_id
             FROM
                Vagval vv
             WHERE
                 vv.deleted = 0
             )
-    """)
+        """)
 
     # ---------------------------------------------------------------------------------------------------
     TestCase(
@@ -221,6 +235,28 @@ def define_test_cases():
                 )
         """)
 
+    # ---------------------------------------------------------------------------------------------------
+    TestCase(
+        "tk_not_part_of_routing",
+        "Tjänstekontrakt som inte förekommer i något vägval",
+        """
+    
+    SELECT DISTINCT
+        tk.id AS 'Tjanstekontrakt ID',
+        tk.namnrymd AS 'Namnrymd'
+    FROM
+        Tjanstekontrakt tk
+    WHERE
+        tk.deleted IS NOT NULL
+        AND tk.id NOT IN (
+            SELECT
+               vv.tjanstekontrakt_id
+            FROM
+               Vagval vv
+            WHERE
+                vv.deleted = 0
+            )
+    """)
     # ---------------------------------------------------------------------------------------------------
     TestCase(
         "components_not_used",
@@ -255,34 +291,38 @@ def define_test_cases():
         )
         """)
 
-    # ---------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------
+
     TestCase(
         "url_not_used_in_routing",
         "URL-er som inte används i något vägval",
         """
-    SELECT DISTINCT
-        aa.id AS 'Adress ID',
-        aa.adress AS 'URL',
-        tk.hsaId AS 'Tjänsteproducent HSA-id'
-    FROM
-        AnropsAdress aa,
-        Tjanstekomponent tk
-    WHERE
-        aa.deleted IS NOT NULL
-        AND tk.deleted IS NOT NULL
-        AND aa.tjanstekomponent_id = tk.id
-        AND aa.id NOT IN (
-            SELECT
-               vv.anropsAdress_id
-            FROM Vagval vv
-            WHERE
-                vv.deleted IS NOT NULL
-        )
-    ORDER BY aa.adress
-       """)
+        SELECT DISTINCT
+            aa.id AS 'Anropsadress ID',
+            aa.adress AS 'URL',
+            tk.hsaId AS 'Tjänsteproducent HSA-id'
+        FROM
+            AnropsAdress aa,
+            Tjanstekomponent tk
+        WHERE
+            aa.deleted IS NOT NULL
+            AND tk.deleted IS NOT NULL
+            AND aa.tjanstekomponent_id = tk.id
+            AND aa.id NOT IN (
+                SELECT
+                   vv.anropsAdress_id
+                FROM Vagval vv
+                WHERE
+                    vv.deleted IS NOT NULL
+            )
+        ORDER BY aa.adress
+           """)
+
+    # ---------------------------------------------------------------------------------------------------
+
 
 def create_summary_file():
-
     now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
     summary_file = f"summary.{TP_NAME}.csv"
@@ -298,11 +338,16 @@ def create_summary_file():
     show_db_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
     show_db_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
 
+    print(f"\nRensning av TAK bör ske i följande ordning:\n")
+    f.write(f"\nRensning av TAK bör ske i följande ordning:\n\n")
+
     for test_case in TestCase.test_cases:
         test_case.summary_report(takdb_connection, f)
 
     f.close()
-    printerr(f"\nInformation ovan har skrivits ut till {summary_file}")
+    printerr(f"\nInformationen ovan har skrivits ut till {summary_file}")
+
+
 ##################################################################################################
 #                                 Main Program
 ##################################################################################################
@@ -317,14 +362,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
 parser.add_argument("-i", "--information", action="store_true", help="Generate information summary file")
 parser.add_argument("-j", "--json", action="store_true", help="Generate json files")
-parser.add_argument("-t", "--tpname", action="store", help='TP name, must end with "_PROD", "_QA" or "_TEST', required=True)
+parser.add_argument("-t", "--tpname", action="store", help='TP name, must end with "_PROD", "_QA" or "_TEST',
+                    required=True)
 parser.add_argument("-s", "--server", action="store", help="Name of DB host", default=host_default)
 parser.add_argument("-u", "--db_user", action="store", help="Name of DB user", default=user_default)
 parser.add_argument("-p", "--db_password", action="store", help="DB user password", default=password_default)
 parser.add_argument("-d", "--db_name", action="store", help="DB name", default=database_default)
 
 args = parser.parse_args()
-
 
 # ------------------------------------------------------------------------------------------
 TP_NAME = args.tpname.upper()

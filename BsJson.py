@@ -137,11 +137,14 @@ class BsJsonSection:
         """
         routing = {
             "tjanstekomponent": component,
-            "adress": address,
             "logiskAdress": logicalAddress,
             "tjanstekontrakt": namespace,
             "rivtaprofil": rivtaProfile
         }
+
+        if address:
+            routing["adress"]: address
+
         if routing not in self.routings:
             self.routings.append(routing)
 
