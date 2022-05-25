@@ -14,8 +14,14 @@ def printerr(text):
 
 
 ##################################################################################################
-def show_db_info(conn, f, table_name, description):
+def show_db_info(conn, f, table_name, description, *where_clause):
+
+
+
     sql_stmt = "SELECT COUNT(*) FROM " + table_name
+
+    if where_clause:
+        sql_stmt = sql_stmt + "WHERE " + where_clause
 
     cursor = conn.cursor()
     cursor.execute(sql_stmt)
@@ -291,9 +297,53 @@ def define_test_cases():
         )
         """)
 
+    # ---------------------------------------------------------------------------------------------------
+
+    TestCase(
+        "autorization_based_on_SE",
+        'Behörigheter baserade på logisk adress "SE" (bör ändras till "*")',
+        """
+        SELECT DISTINCT ab.id AS 'Anropsbehorighet ID',
+        la.hsaId AS 'Logisk adress',
+        tk.namnrymd AS 'Tjänstekontrakt',
+        comp.hsaId AS 'Tjänstekonsument HSA-ID',
+        comp.beskrivning AS 'Tjänstekońsument beskrivning'
+        FROM Anropsbehorighet ab,
+         LogiskAdress la,
+         Tjanstekontrakt tk,
+         Tjanstekomponent comp
+        WHERE ab.deleted IS NOT NULL
+          AND ab.logiskAdress_id = la.id
+          AND ab.tjanstekontrakt_id = tk.id
+          AND ab.tjanstekonsument_id = comp.id
+          AND la.hsaId = 'SE'
+              """)
 
 # ---------------------------------------------------------------------------------------------------
+    TestCase(
+        "routing_based_on_SE",
+        'Vägval baserade på logisk adress "SE" (bör ändras till "*")',
+        """
+        SELECT DISTINCT vv.id AS 'Vagval ID',
+            la.hsaId AS 'Logisk adress',
+            tk.namnrymd AS 'Tjänstekontrakt',
+            comp.hsaId AS 'Tjänsteproducent HSA-ID',
+            comp.beskrivning AS 'Tjänsteproducent beskrivning'
+            FROM Vagval vv,
+             LogiskAdress la,
+             Tjanstekontrakt tk,
+             Tjanstekomponent comp,
+             AnropsAdress aa
+        WHERE vv.deleted IS NOT NULL
+          AND vv.logiskAdress_id = la.id
+          AND vv.tjanstekontrakt_id = tk.id
+          AND vv.anropsAdress_id = aa.id
+          AND aa.tjanstekomponent_id = comp.id
+          AND la.hsaId = 'SE'
 
+              """)
+
+# ---------------------------------------------------------------------------------------------------
     TestCase(
         "url_not_used_in_routing",
         "URL-er som inte används i något vägval",
@@ -334,8 +384,8 @@ def create_summary_file():
     show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
     show_db_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
     show_db_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
-    show_db_info(takdb_connection, f, "Vagval", "Antal vägval")
     show_db_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
+    show_db_info(takdb_connection, f, "Vagval", "Antal vägval")
     show_db_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
 
     print(f"\nRensning av TAK bör ske i följande ordning:\n")
