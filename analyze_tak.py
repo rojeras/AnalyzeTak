@@ -67,7 +67,9 @@ class TestCase:
 
     def generate_json(self, conn, tpname):
 
-        if self.id == "url_not_used_in_routing":
+        if self.id == "url_not_used_in_routing" \
+                or self.id == "authorization_based_on_SE"\
+                or self.id == "routing_based_on_SE":
             return
 
         exclude_section = BsJsonSection()
@@ -300,7 +302,7 @@ def define_test_cases():
     # ---------------------------------------------------------------------------------------------------
 
     TestCase(
-        "autorization_based_on_SE",
+        "authorization_based_on_SE",
         'Behörigheter baserade på logisk adress "SE" (bör ändras till "*")',
         """
         SELECT DISTINCT ab.id AS 'Anropsbehorighet ID',

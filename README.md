@@ -32,17 +32,17 @@
 
 # Att reda ut
 ## Todo
-* Ändra turordning så att routings och autorizations witout - körs först
-* Saknas `routing_without_a_matching_authorization`
-    * Tag hänsyn till SE och * på lämpligt sätt.
-* Stäm av att autorization_without_routing verkligen hanteras rätt med tanke på att vägval kan använda SE resp *. 
-* Lyft fram användning av "SE" som ett fel. Även med i `summary.csv.` och med rättnings-json.
 * Kolla att URL-er inte baseras på IP-adress utan på DNS-namn. 
 * Skriv något om vikten av att kontrollerna sker i rätt ordning.
 * När JSON-filerna implementeras ska det tydligt dokumenteras vad som måste tas bort via TAK-WEB. 
 * När JSON-filerna implementeras bör det även tas fram rollback-filer.
+* Skriv en dokumentation i denna readme.
 
 ## Done
+* Ändra turordning så att routings och authorizations without - körs först
+* Stäm av att autorization_without_routing verkligen hanteras rätt med tanke på att vägval kan använda SE resp *.
+* Lyft fram användning av "SE" som ett fel. Även med i `summary.csv.` och med rättnings-json.
+* Saknas `routing_without_a_matching_authorization`
 * Lägg med information om plattform (om möjligt) i filnamnet. I alla filnamn, dvs gör tpname obligatorisk.
 * ÅÄÖ blir fel i windows.
 * `authoriztion_without_a_matching_routing`
