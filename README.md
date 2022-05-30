@@ -6,7 +6,7 @@
 
    En rekommendation är att använda en virtuell Pythonmiljö (venv)
 
-3. Exekvera `analyze.py`
+3. Exekvera `analyze_tak.py`
 4. Resultatet skrivs ut i CSV-filer, en per test. 
 
 # Körordning
@@ -32,13 +32,13 @@
 
 # Att reda ut
 ## Todo
-* Kolla att URL-er inte baseras på IP-adress utan på DNS-namn. 
 * Skriv något om vikten av att kontrollerna sker i rätt ordning.
 * När JSON-filerna implementeras ska det tydligt dokumenteras vad som måste tas bort via TAK-WEB. 
 * När JSON-filerna implementeras bör det även tas fram rollback-filer.
 * Skriv en dokumentation i denna readme.
 
 ## Done
+* Kolla att URL-er inte baseras på IP-adress utan på DNS-namn.
 * Ändra turordning så att routings och authorizations without - körs först
 * Stäm av att autorization_without_routing verkligen hanteras rätt med tanke på att vägval kan använda SE resp *.
 * Lyft fram användning av "SE" som ett fel. Även med i `summary.csv.` och med rättnings-json.

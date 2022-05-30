@@ -69,6 +69,7 @@ class TestCase:
 
         if self.id == "url_not_used_in_routing" \
                 or self.id == "authorization_based_on_SE"\
+                or self.id == "url_based_on_ip_address"\
                 or self.id == "routing_based_on_SE":
             return
 
@@ -369,6 +370,24 @@ def define_test_cases():
                     vv.deleted IS NOT NULL
             )
         ORDER BY aa.adress
+           """)
+
+    # ---------------------------------------------------------------------------------------------------
+    TestCase(
+        "url_based_on_ip_address",
+        "URL-er som specificerar IP-adresser istället för DNS-namn",
+        """
+        SELECT DISTINCT
+            aa.id AS 'Anropsadress ID',
+            aa.adress AS 'URL',
+            comp.hsaId AS 'Tjänsteproducent HSA-id'
+        FROM
+            AnropsAdress aa,
+            Tjanstekomponent comp
+        WHERE
+            aa.deleted IS NOT NULL
+            AND aa.tjanstekomponent_id = comp.id
+            AND aa.adress REGEXP 'https?:\/\/(?:[0-9]{1,3}\.){3}[0-9]{1,3}'
            """)
 
     # ---------------------------------------------------------------------------------------------------
