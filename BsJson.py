@@ -116,7 +116,7 @@ class BsJsonSection:
                           ) -> object:
 
         auth = {
-            "tjanstekomponent": component,
+            "tjanstekonsument": component,
             "logiskAdress": logicalAddress,
             "tjanstekontrakt": namespace
         }
