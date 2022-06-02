@@ -143,7 +143,7 @@ class BsJsonSection:
         }
 
         if address:
-            routing["adress"]: address
+            routing["adress"] = address
 
         if routing not in self.routings:
             self.routings.append(routing)
