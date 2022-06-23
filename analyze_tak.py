@@ -147,6 +147,7 @@ def define_test_cases():
         Tjanstekontrakt tk
     WHERE
       ab.deleted IS NOT NULL
+      AND ab.tomTidpunkt > CURDATE()
       AND ab.logiskAdress_id = la.id
       AND la.hsaId <> '*'
       AND la.hsaId <> 'SE'
@@ -157,6 +158,7 @@ def define_test_cases():
           FROM Vagval vv
           WHERE
           vv.deleted IS NOT NULL
+            AND vv.tomTidpunkt > CURDATE()
             AND vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
             AND vv.logiskAdress_id = ab.logiskAdress_id
         )
@@ -180,6 +182,7 @@ def define_test_cases():
          Tjanstekontrakt tk,
          AnropsAdress aa
     WHERE vv.deleted IS NOT NULL
+      AND vv.tomTidpunkt > CURDATE()  
       AND vv.logiskAdress_id = la.id
       AND vv.anropsAdress_id = aa.id
       AND aa.tjanstekomponent_id = comp.id
@@ -188,6 +191,7 @@ def define_test_cases():
                                         FROM Anropsbehorighet ab,
                                              LogiskAdress la2
                                         WHERE ab.deleted IS NOT NULL
+                                          AND ab.tomTidpunkt > CURDATE()  
                                           AND ab.tjanstekontrakt_id = vv.tjanstekontrakt_id
                                           AND ab.logiskAdress_id = la2.id
                                           AND (
@@ -218,7 +222,8 @@ def define_test_cases():
             FROM
                Vagval vv
             WHERE
-                vv.deleted = 0
+                vv.deleted IS NOT NULL
+                AND vv.tomTidpunkt > CURDATE()
             )
         """)
 
@@ -240,7 +245,8 @@ def define_test_cases():
                 FROM
                    Anropsbehorighet ab
                 WHERE
-                    ab.deleted = 0
+                    ab.deleted IS NOT NULL 
+                    AND ab.tomTidpunkt > CURDATE()
                 )
         """)
 
@@ -263,7 +269,8 @@ def define_test_cases():
             FROM
                Vagval vv
             WHERE
-                vv.deleted = 0
+                vv.deleted IS NOT NULL 
+                AND vv.tomTidpunkt > CURDATE()
             )
     """)
     # ---------------------------------------------------------------------------------------------------
@@ -288,6 +295,7 @@ def define_test_cases():
             WHERE
                 ad.id = vv.anropsAdress_id
                 AND vv.deleted IS NOT NULL
+                AND vv.tomTidpunkt > CURDATE()
                 AND ad.deleted IS NOT NULL
             )
         AND comp.id NOT IN (
@@ -296,7 +304,8 @@ def define_test_cases():
             FROM
                 Anropsbehorighet ab
             WHERE
-                ab.deleted = 0
+                ab.deleted IS NOT NULL
+                AND ab.tomTidpunkt > CURDATE()
         )
         """)
 
@@ -316,6 +325,7 @@ def define_test_cases():
          Tjanstekontrakt tk,
          Tjanstekomponent comp
         WHERE ab.deleted IS NOT NULL
+          AND ab.tomTidpunkt > CURDATE()  
           AND ab.logiskAdress_id = la.id
           AND ab.tjanstekontrakt_id = tk.id
           AND ab.tjanstekonsument_id = comp.id
@@ -338,6 +348,7 @@ def define_test_cases():
              Tjanstekomponent comp,
              AnropsAdress aa
         WHERE vv.deleted IS NOT NULL
+          AND vv.tomTidpunkt > CURDATE()
           AND vv.logiskAdress_id = la.id
           AND vv.tjanstekontrakt_id = tk.id
           AND vv.anropsAdress_id = aa.id
@@ -368,6 +379,7 @@ def define_test_cases():
                 FROM Vagval vv
                 WHERE
                     vv.deleted IS NOT NULL
+                    AND vv.tomTidpunkt > CURDATE()
             )
         ORDER BY aa.adress
            """)
