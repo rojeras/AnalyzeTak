@@ -24,7 +24,7 @@
 5. Vägval som inte har några anropsbehörigheter
 6. URL-er kopplade till tjänsteproducenter som inte används i något vägval
 
-## Tag fram grunddata om TAK-ningar
+## Tag fram grunddata om TAK-ningar 
 1. Antal vägval
 2. Antal anropsbehörigheter
 3. Antal integrationer
