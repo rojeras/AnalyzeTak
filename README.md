@@ -32,6 +32,7 @@
 
 # Att reda ut
 ## Todo
+* Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 * När JSON-filerna implementeras bör det ev tas fram rollback-filer.
 * Skriv en dokumentation i denna readme.
 * Överväg att lägga på en kontroll över att namnrymderna är korrekta.
