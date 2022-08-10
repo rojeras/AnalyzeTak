@@ -1,11 +1,11 @@
 # Installation
 1. Klona detta repo
-2. Installera mysql-stöd i python
-
-    `python3 -m pip install mysql-connector-python`
-
-   En rekommendation är att använda en virtuell Pythonmiljö (venv)
-
+2. Sätt upp pythonmiljön
+    ```
+   python3 -m venv venv
+   source venv/bin/activate
+   python3 -m pip install mysql-connector-python
+   ```
 3. Exekvera `analyze_tak.py`
 4. Resultatet skrivs ut i CSV-filer, en per test. 
 
