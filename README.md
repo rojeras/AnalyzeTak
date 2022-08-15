@@ -52,7 +52,14 @@
 * Tag även fram sammanställning över antalet olika objekt i TAK-en. Ev tillsammans med antalet fel.
 * CSV för URL-er skall även inkludera tjänstekomponent. Dock är det märkligt att samma URL kan representera olika komponenter. Kolla upp varför det blivit så. Lägg även på rubrik för tjänsteproducenten.
 ## deleted
-Många tabeller har en kolumn vid namn *deleted*. Den verkar innehålla *null* eller *0*. Min tolkning är att *0* innebär att objektet existerar, *null* att det har tagits bort. 
+Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
+
+Min tolknig av texten är att om deleted-flaggan är NULL så
+indikerar det att posten är borttagen. Alla andra värden står för "FALSE", dvs att posten inte är deleted. Det gör att kontrollen "IS NOT NULL" visar att en post existerar.
+
+Förutom kolumnen deleted behöver även tomDatum kontrolleras. Om det är "före" aktuellt datum måste också posten betraktas som deleted.
+
+
 
 # Utdata
 * CSV-filer som kan läsas in i excel med listor över de problem som identifierats
