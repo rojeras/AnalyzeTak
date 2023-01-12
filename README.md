@@ -23,6 +23,7 @@
 4. Tjänstekomponenter som inte ingår i behörighet eller utan anropsadress
 5. Vägval som inte har några anropsbehörigheter
 6. URL-er kopplade till tjänsteproducenter som inte används i något vägval
+7. Verifiera att HSA-id för tjänstekomponenter enbart innehåller legala karaktärer (inte ex underscore).
 
 ## Tag fram grunddata om TAK-ningar 
 1. Antal vägval
@@ -32,7 +33,6 @@
 
 # Att reda ut
 ## Todo
-* Lägg in kontroll över att std.behörighet alltid används för std.vägval
 * Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 * När JSON-filerna implementeras bör det ev tas fram rollback-filer.
 * Skriv en dokumentation i denna readme.
