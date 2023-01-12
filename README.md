@@ -12,6 +12,7 @@
 # Körordning
 1. Oanvända behörigheter
 2. Oanvända vägval
+3. Standarvägval utan standardbehörighet
 3. Oanvända URL-er
 4. Övriga oanvända objekt (TK, LA och komponenter).
 
