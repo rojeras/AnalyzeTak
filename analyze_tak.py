@@ -1,3 +1,4 @@
+#!/bin/env python
 # coding=utf-8
 import mysql.connector
 from mysql.connector import Error
@@ -436,9 +437,9 @@ def create_summary_file():
 ##################################################################################################
 # Defaults
 host_default = "localhost"
-user_default = "TPDB"
-password_default = "TPDB"
-database_default = "TAK20200327"
+user_default = "dbuser"
+password_default = "dbuser"
+database_default = "takv_prod_20230112"
 
 parser = argparse.ArgumentParser()
 
