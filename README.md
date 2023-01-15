@@ -6,7 +6,7 @@
    source venv/bin/activate
    python3 -m pip install mysql-connector-python
    ```
-3. Exekvera `analyze_tak.py`
+3. Exekvera `analyze_tak.py`. Information om nödvändiga flaggor skrivs ut.
 4. Resultatet skrivs ut i CSV-filer, en per test. 
 
 # Körordning
