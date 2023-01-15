@@ -199,10 +199,10 @@ def define_test_cases():
                                                     ab.logiskAdress_id = vv.logiskAdress_id
                                                 OR la2.hsaId =  '*'
                                                 OR la2.hsaId = 'SE'))
-    
-    
     ORDER BY vv.id    
         """)
+
+    # ---------------------------------------------------------------------------------------------------
     TestCase(
         "la_not_part_of_routing",
         "Logiska adresser som inte förekommer i något vägval",
