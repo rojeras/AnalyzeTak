@@ -6,17 +6,16 @@ import csv
 import sys
 import argparse
 from datetime import datetime
-from BsJson import BsJson, BsJsonSection
-
+from BsJson import BsJson, BsJsonSection # Library to generate Beställningsstöd JSON
 
 ##################################################################################################
-def printerr(text):
+def printerr(text: str):
+    """Print text to std error"""
+
     print(text, file=sys.stderr)
 
-
 ##################################################################################################
-def show_db_info(conn, f, table_name, description, *where_clause):
-
+def show_table_info(conn, f, table_name, description, *where_clause):
 
 
     sql_stmt = "SELECT COUNT(*) FROM " + table_name
@@ -24,8 +23,14 @@ def show_db_info(conn, f, table_name, description, *where_clause):
     if where_clause:
         sql_stmt = sql_stmt + "WHERE " + where_clause
 
+    show_db_info(conn, f, sql_stmt, description)
+
+
+##################################################################################################
+def show_db_info(conn, f, sql: str, description: str):
+
     cursor = conn.cursor()
-    cursor.execute(sql_stmt)
+    cursor.execute(sql)
     result = cursor.fetchone()[0]
     f.write(f"{description}; {result}\n")
     print(f"{description}: {result}")
@@ -415,12 +420,12 @@ def create_summary_file():
     f.close()
     f = open(summary_file, 'a', newline='', encoding='utf-8')
 
-    show_db_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
-    show_db_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
-    show_db_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
-    show_db_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
-    show_db_info(takdb_connection, f, "Vagval", "Antal vägval")
-    show_db_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
+    show_table_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
+    show_table_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
+    show_table_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
+    show_table_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
+    show_table_info(takdb_connection, f, "Vagval", "Antal vägval")
+    show_table_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
 
     print(f"\nRensning av TAK bör ske i följande ordning:\n")
     f.write(f"\nRensning av TAK bör ske i följande ordning:\n\n")
