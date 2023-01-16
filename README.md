@@ -35,6 +35,7 @@
 # Att reda ut
 ## Todo
 * Addera kontroll av att alla standardvägval motsvaras av standardbehörighet.
+* Lägg till information om antal standardbehörigheter och -vägval
 * Ändra benämning av "URL" till "Anropsadess"! En anropsadress består av en url och en tjänstekomponentsreferens.
 * Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 * När JSON-filerna implementeras bör det ev tas fram rollback-filer.
