@@ -1,5 +1,6 @@
 # Funktion
 Detta script analysera en TAK. Det finns flera sätt att presentera resultatet vilket styrs av flaggor i scriptet:
+
 * En informationssida
 * Listor i form av CSV-filer
 * JSON-filer enligt formatet som Beställningsstödet använder. För vissa av analyserna skapas dessa och kan användas för att rätta TAK-en. 

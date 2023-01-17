@@ -16,7 +16,7 @@ def printerr(text: str):
 
 ##################################################################################################
 def show_table_info(conn, f, table_name, description, *where_clause):
-
+    """Convenience frontend to show_db_info()"""
 
     sql_stmt = "SELECT COUNT(*) FROM " + table_name
 
@@ -28,6 +28,7 @@ def show_table_info(conn, f, table_name, description, *where_clause):
 
 ##################################################################################################
 def show_db_info(conn, f, sql: str, description: str):
+    """Function to do count(*) in the db and print it out on screen and in output file"""
 
     cursor = conn.cursor()
     cursor.execute(sql)
@@ -37,16 +38,66 @@ def show_db_info(conn, f, sql: str, description: str):
 
 
 ##################################################################################################
+def create_summary_file():
+    """Creates the summary information and writes it to screen and to a summary CSV-file"""
+
+    now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
+
+    summary_file = f"summary.{TP_NAME}.csv"
+    f = open(summary_file, 'w', newline='', encoding='utf-8')
+    f.write(f"TAK-information genererad {now}\n")
+    f.close()
+    f = open(summary_file, 'a', newline='', encoding='utf-8')
+
+    print(f"\nDenna TAK innehåller:\n")
+    f.write(f"\nDenna TAK innehåller:\n\n")
+
+    show_table_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
+    show_table_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
+    show_table_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
+    show_table_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
+    show_table_info(takdb_connection, f, "Vagval", "Antal vägval")
+    show_table_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
+
+    print(f"\nFöljande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):\n")
+    f.write(f"\nFöljande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):\n\n")
+
+    for test_case in TestCase.test_cases:
+        test_case.summary_report(takdb_connection, f)
+
+    f.close()
+    printerr(f"\nInformationen ovan har skrivits ut till {summary_file}")
+
+
+##################################################################################################
 class TestCase:
+    """
+    Class which defines TAK test cases.
+
+    Each test case will exist as a separate instance. They will be stored and access through the static class list test_cases[].
+    ...
+    Attributes
+    ----------
+    id : str
+        A string which identifies the test case. Will also be used to name the result files.
+    description : str
+        A description of the test case. Will be used on summary page and as heading in the result files.
+    select_stmt : str
+        The SQL Select statement the test case use to identify the problems.
+    """
+
     test_cases = []
 
     def __init__(self, id, description, select_stmt):
+        """Constructor which stores the instance in test_cases[]"""
         self.description = description
         self.id = id
         self.select_stmt = select_stmt
         TestCase.test_cases.append(self)
 
     def count_stmt(self):
+        """Count the number of test results (number of problems)"""
+
         ix = self.select_stmt.index("FROM") - 1
         tail = self.select_stmt[ix:]
         return "SELECT COUNT(*)" + tail
@@ -72,7 +123,12 @@ class TestCase:
             writer.writerows(result)
 
     def generate_json(self, conn, tpname):
+        """Create JSON file to correct the problems found.
 
+         These files will be generated for a subset of the tests.
+         The different columns from the SELECT results are mapped to different attributes in the JSON
+         The BsJson class(es) are used to create the JSON files (defined in a separate source file).
+         """
         if self.id == "url_not_used_in_routing" \
                 or self.id == "authorization_based_on_SE"\
                 or self.id == "url_based_on_ip_address"\
@@ -123,7 +179,8 @@ class TestCase:
         content.print_json(filename)
 
     def summary_report(self, conn, f):
-        """ Return string specifying number of errors """
+        """ Create a string specifying number of errors """
+
         cursor = conn.cursor()
         cursor.execute(self.count_stmt())
         result = cursor.fetchone()[0]
@@ -132,8 +189,7 @@ class TestCase:
 
 
 def define_test_cases():
-
-    # ---------------------------------------------------------------------------------------------------
+    """The test cases (instances of the TestCase class) are created by this function"""
 
     TestCase(
         "authorization_without_a_matching_routing",
@@ -408,47 +464,18 @@ def define_test_cases():
             AND aa.adress REGEXP 'https?:\/\/(?:[0-9]{1,3}\.){3}[0-9]{1,3}'
            """)
 
-    # ---------------------------------------------------------------------------------------------------
-
-
-def create_summary_file():
-    now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
-
-    summary_file = f"summary.{TP_NAME}.csv"
-    f = open(summary_file, 'w', newline='', encoding='utf-8')
-    f.write(f"TAK-information genererad {now}\n")
-    f.close()
-    f = open(summary_file, 'a', newline='', encoding='utf-8')
-
-    print(f"\nDenna TAK innehåller:\n")
-    f.write(f"\nDenna TAK innehåller:\n\n")
-
-    show_table_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
-    show_table_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
-    show_table_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
-    show_table_info(takdb_connection, f, "Anropsbehorighet", "Antal anropsbehörigheter")
-    show_table_info(takdb_connection, f, "Vagval", "Antal vägval")
-    show_table_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
-
-    print(f"\nFöljande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):\n")
-    f.write(f"\nFöljande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):\n\n")
-
-    for test_case in TestCase.test_cases:
-        test_case.summary_report(takdb_connection, f)
-
-    f.close()
-    printerr(f"\nInformationen ovan har skrivits ut till {summary_file}")
-
 
 ##################################################################################################
 #                                 Main Program
 ##################################################################################################
-# Defaults
+# Script argument defaults
 host_default = "localhost"
 user_default = "dbuser"
 password_default = "dbuser"
 database_default = "takv_prod_20230112"
 
+# ------------------------------------------------------------------------------------------
+# Set up the argument parsing
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-c", "--csv", action="store_true", help="Generate csv files")
@@ -463,7 +490,6 @@ parser.add_argument("-d", "--db_name", action="store", help="DB name", default=d
 
 args = parser.parse_args()
 
-# ------------------------------------------------------------------------------------------
 TP_NAME = args.tpname.upper()
 
 if not (TP_NAME.endswith("_PROD") or TP_NAME.endswith("_QA") or TP_NAME.endswith("_TEST")):
@@ -476,6 +502,7 @@ if not (args.csv or args.json or args.information):
     exit(1)
 
 # ------------------------------------------------------------------------------------------
+# Connect to the TAK database
 try:
     takdb_connection = mysql.connector.connect(
         host=args.server,
@@ -492,8 +519,11 @@ except Error as e:
     exit(1)
 
 # ------------------------------------------------------------------------------------------
+# Create the test cases
 define_test_cases()
 
+# ------------------------------------------------------------------------------------------
+# Do the work based on user specified flags
 if (args.information):
     create_summary_file()
 
@@ -505,4 +535,7 @@ if (args.json):
     for test_case in TestCase.test_cases:
         test_case.generate_json(takdb_connection, TP_NAME)
 
+# ------------------------------------------------------------------------------------------
+# Close and exit
 takdb_connection.close()
+exit(0)
