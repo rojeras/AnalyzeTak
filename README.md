@@ -1,48 +1,69 @@
+# Funktion
+Detta script analysera en TAK. Det finns flera sätt att presentera resultatet vilket styrs av flaggor i scriptet:
+* En informationssida
+* Listor i form av CSV-filer
+* JSON-filer enligt formatet som Beställningsstödet använder. För vissa av analyserna skapas dessa och kan användas för att rätta TAK-en. 
+
+Utdata är dels statistik över antal objekt av olika typ i TAKen, dels ett antal städningsunderlag. 
+
+## Exempel på informationssida
+```
+venv) ➜  analyze-tak_linux git:(develop) ✗ ./analyze_tak.py -t TP_TEST -i
+
+Denna TAK innehåller:
+
+Antal tjänstekomponenter: 66
+Antal tjänstekontrakt: 117
+Antal logiska adresser: 5225
+Antal anropsbehörigheter: 26025
+Antal vägval: 31826
+Antal URL-er: 203
+
+Följande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):
+
+Anropsbehörigheter till icke existerande vägval: 1692
+Vägval som saknar anropsbehörigheter: 16
+Logiska adresser som inte förekommer i något vägval: 349
+Tjänstekontrakt som inte förekommer i någon anropsbehörighet: 56
+Tjänstekontrakt som inte förekommer i något vägval: 43
+Tjänstekomponenter som inte förekommer i något vägval eller någon anropsbehörighet: 11
+Behörigheter baserade på logisk adress "SE" (bör ändras till "*"): 13
+Vägval baserade på logisk adress "SE" (bör ändras till "*"): 11
+URL-er som inte används i något vägval: 37
+URL-er som specificerar IP-adresser istället för DNS-namn: 0
+
+Informationen ovan har skrivits ut till summary.TP_TEST.csv
+```
+
+## Städning av TAK
+Baserat på informationen som scriptet genererar kan en TAK städas från felaktig och död information. Städningen skall ske i den ordning som visas i informationssidan ovan. Det måste ske iterativt - efter varje städning skall scriptet exekveras på nytt och det uppdaterade underlagen användas för nästa steg. 
+
 # Installation
 1. Klona detta repo
-2. Sätt upp pythonmiljön
+2. Sätt upp pythonmiljön. Det är ofta en god idé att använda en virtuell miljö:
     ```
    python3 -m venv venv
    source venv/bin/activate
    python3 -m pip install mysql-connector-python
    ```
-3. Exekvera `analyze_tak.py`. Information om nödvändiga flaggor skrivs ut.
-4. Resultatet skrivs ut i CSV-filer, en per test. 
+3. Scriptet behöver tillgång till en exekverande mysql/mariadb TAK-databas. En användare med enbart läsrättigheter rekommenderas starkt! 
+4. Exekvera `analyze_tak.py`. Information om nödvändiga flaggor skrivs ut.
+ 
 
-# Körordning
-1. Oanvända behörigheter
-2. Oanvända vägval
-3. Standarvägval utan standardbehörighet
-3. Oanvända URL-er
-4. Övriga oanvända objekt (TK, LA och komponenter).
-
-# Exempel på frågor som kan analysera
-## Söka fram problem i TAK
-1. Logiska adresser som inte ingår i vägval och behörighet
-2. Tjänstekontrakt som inte ingår i vägval och behörighet
-3. Anropsbehörigheter utan matchande vägval
-4. Tjänstekomponenter som inte ingår i behörighet eller utan anropsadress
-5. Vägval som inte har några anropsbehörigheter
-6. URL-er kopplade till tjänsteproducenter som inte används i något vägval
-7. Verifiera att HSA-id för tjänstekomponenter enbart innehåller legala karaktärer (inte ex underscore).
-
-## Tag fram grunddata om TAK-ningar 
-1. Antal vägval
-2. Antal anropsbehörigheter
-3. Antal integrationer
-4. Antal routes
-
-# Att reda ut
-## Todo
+# Möjliga förbättringar
 * Addera kontroll av att alla standardvägval motsvaras av standardbehörighet.
+  * Uppdatera _authorization_without_a_matching_routing_
 * Lägg till information om antal standardbehörigheter och -vägval
-* Ändra benämning av "URL" till "Anropsadess"! En anropsadress består av en url och en tjänstekomponentsreferens.
-* Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
+* Ändra benämning av "URL" till "Anropsadress"! En anropsadress består av en url och en tjänstekomponentsreferens.
+* Uppenbarligen är logiken kring delete-kolumnen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 * När JSON-filerna implementeras bör det ev tas fram rollback-filer.
 * Skriv en dokumentation i denna readme.
 * Överväg att lägga på en kontroll över att namnrymderna är korrekta.
+* Lista konsumenter som har både explicit och standardbehörighet till ett vägval.
+* Lista konsumenter som enbart har explicita behörigheter till standardvägval.
 
-## Done
+
+## Genomfört
 * Skriv något om vikten av att kontrollerna sker i rätt ordning.
 * Kolla att URL-er inte baseras på IP-adress utan på DNS-namn.
 * Ändra turordning så att routings och authorizations without - körs först
@@ -56,6 +77,8 @@
 * Se över rubrikerna i CSV-filerna så att det blir tydligt vilken kolumn i vilken tabell de står för.
 * Tag även fram sammanställning över antalet olika objekt i TAK-en. Ev tillsammans med antalet fel.
 * CSV för URL-er skall även inkludera tjänstekomponent. Dock är det märkligt att samma URL kan representera olika komponenter. Kolla upp varför det blivit så. Lägg även på rubrik för tjänsteproducenten.
+
+# Att begrunda
 ## deleted
 Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 
@@ -65,21 +88,15 @@ indikerar det att posten är borttagen. Alla andra värden står för "FALSE", d
 Förutom kolumnen deleted behöver även tomDatum kontrolleras. Om det är "före" aktuellt datum måste också posten betraktas som deleted.
 
 
+## Andra kontroller som skulle kunna implementeras
 
-# Utdata
-* CSV-filer som kan läsas in i excel med listor över de problem som identifierats
-* BS-JSON beställningsfiler med de rättningar som kan/bör göras av en TAK
-* Tillhandahålla informationen via en webbsida (generera HTML, kanske använda Python Flask)
-
-# Andra kontroller som skulle kunna implementeras
-
-## Baserat på TAK
+### Baserat på TAK
 1. URL-er som inte når fram till en tjänsteproducent (går lite utanför en ren TAK-utsökning)
 2. Man kan även jämföra producenters HSA-id med det cert som producenten visar upp mot RTP. Oscar har tagit fram en lista över producenter och HSA-id deras cert.
 
-## Baserat på TAK-api
+### Baserat på TAK-api
 Principiellt borde alla kontroller som nu sker mot TAK-databasen kunna ske även via TAK-api. Men, eftersom man då inte skulle kunna jobba med SQL så skulle det bli betydligt mer komplicerat.
 
-## Baserat på TPDB
+### Baserat på TPDB
 1. Man skulle även kunna titta i statistiktabellen i TPDB för att lista anslutningar som inte används under en period (ex senaste året).
 2. I TPDB har vi ju historik information som skulle kunna analyseras och visualiseras.

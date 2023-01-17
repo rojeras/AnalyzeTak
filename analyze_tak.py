@@ -420,6 +420,9 @@ def create_summary_file():
     f.close()
     f = open(summary_file, 'a', newline='', encoding='utf-8')
 
+    print(f"\nDenna TAK innehåller:\n")
+    f.write(f"\nDenna TAK innehåller:\n\n")
+
     show_table_info(takdb_connection, f, "Tjanstekomponent", "Antal tjänstekomponenter")
     show_table_info(takdb_connection, f, "Tjanstekontrakt", "Antal tjänstekontrakt")
     show_table_info(takdb_connection, f, "LogiskAdress", "Antal logiska adresser")
@@ -427,8 +430,8 @@ def create_summary_file():
     show_table_info(takdb_connection, f, "Vagval", "Antal vägval")
     show_table_info(takdb_connection, f, "AnropsAdress", "Antal URL-er")
 
-    print(f"\nRensning av TAK bör ske i följande ordning:\n")
-    f.write(f"\nRensning av TAK bör ske i följande ordning:\n\n")
+    print(f"\nFöljande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):\n")
+    f.write(f"\nFöljande märkligheter har identifierats i denna TAK (städning skall ske i samma ordning som listas nedan):\n\n")
 
     for test_case in TestCase.test_cases:
         test_case.summary_report(takdb_connection, f)
