@@ -11,7 +11,8 @@ def printerr(text):
 class BsJson:
     """ A class to create BS JSON files
 
-    It manages the JSON file header information and references the include and exclude sections.
+    It manages the JSON file header information and references the include and exclude sections. The Json information
+    is managed as python dictionaries internally, and converted to JSON when printed.
 
     Attributes
     ----------
@@ -33,7 +34,8 @@ class BsJson:
         self.exclude = None
 
     def add_section(self, type, section):
-        """Method which receives and store a section (include or exclude) """
+        """Method which receives and stores a BsJsonSection instance (include or exclude) """
+
         if type == "include":
             self.include = section
         elif type == "exclude":
@@ -43,6 +45,9 @@ class BsJson:
             exit(1)
 
     def get_header(self):
+        """Method which creates the header info in the BS Json file """
+
+
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+0100")
 
         return {
@@ -55,7 +60,7 @@ class BsJson:
         }
 
     def print_json(self, *file):
-
+        """Method to collect all information and write the Json data to a file """
         content = self.get_header()
         if self.include:
             content["inkludera"] = BsJsonSection.get_json(self.include)
@@ -73,7 +78,29 @@ class BsJson:
 
 
 class BsJsonSection:
+    """A class which represents a BS Json include or exclude section
+
+    The different constituents of a section is added to an instance. It can then be retrieved in the form af a python
+    dictionary.
+
+    Attributes
+    ----------
+    logicalAddresses : list of dicts
+        Store dicts representing LA
+    components :  list of dicts
+        Store dicts representing components
+    contracts :  list of dicts
+        Store dicts representing contracts
+    routings :  list of dicts
+        Store dicts representing routings (vagval)
+    authorities :  list of dicts
+        Store dicts representing authorities (behorighet)
+    """
+
+
     def __init__(self):
+        """Constructor"""
+
         self.logicalAddresses = []
         self.components = []
         self.contracts = []
@@ -83,6 +110,7 @@ class BsJsonSection:
     def add_logicalAddress(self,
                            id,
                            *description):
+        """Add a unique dict representing TAK-info to instance."""
 
         logicalAddress = {
             "hsaId": id
@@ -95,6 +123,7 @@ class BsJsonSection:
             self.logicalAddresses.append(logicalAddress)
 
     def add_component(self, id, *description):
+        """Add a unique dict representing TAK-info to instance."""
 
         component = {
             "hsaId": id
@@ -109,6 +138,7 @@ class BsJsonSection:
     def add_contract(self,
                      namespace,
                      *description):
+        """Add a unique dict representing TAK-info to instance."""
 
         ix = namespace.rfind(":") + 1
         majorStr = namespace[ix:]
@@ -130,6 +160,7 @@ class BsJsonSection:
                           logicalAddress: object,
                           namespace: object
                           ) -> object:
+        """Add a unique dict representing TAK-info to instance."""
 
         auth = {
             "tjanstekonsument": component,
@@ -147,10 +178,8 @@ class BsJsonSection:
                     logicalAddress: object,
                     namespace: object,
                     rivtaProfile: object = "RIVTABP21") -> object:
-        """
+        """Add a unique dict representing TAK-info to instance."""
 
-        :rtype: object
-        """
         routing = {
             "tjanstekomponent": component,
             "logiskAdress": logicalAddress,
@@ -165,6 +194,7 @@ class BsJsonSection:
             self.routings.append(routing)
 
     def get_json(self):
+        """Return the information in this section instance in the form of a dict"""
 
         return {
             "tjanstekomponenter": self.components,
@@ -174,4 +204,3 @@ class BsJsonSection:
             "vagval": self.routings,
         }
 
-    # """
