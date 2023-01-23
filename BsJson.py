@@ -2,22 +2,38 @@ from datetime import datetime
 import json
 import sys
 
-
-# A couple of classes to manage and generate the BS-json files
+# This file contains two classes to manage and generate the BS-json files
 
 def printerr(text):
     print(text, file=sys.stderr)
 
 
 class BsJson:
+    """ A class to create BS JSON files
+
+    It manages the JSON file header information and references the include and exclude sections.
+
+    Attributes
+    ----------
+    plattform : str
+        The name of the TP instance (example "RTP-PROD"). Mapped to "plattform" in the JSON file.
+    excutor : str
+        Name of the organization doing the TAK change, mapped to "utforare" in the JSON file.
+    include : BsJsonSection
+        An instance of BsJsonSection which contains the include section.
+    exclude : BsJsonSection
+        An instance of BsJsonSection which contains the exclude section.
+    """
+
     def __init__(self, plattform, executor="Region Stockholm - Forvaltningsobjekt Informationsinfrastruktur"):
+        """Constructor"""
         self.plattform = plattform
         self.executor = executor
         self.include = None
         self.exclude = None
 
     def add_section(self, type, section):
-
+        """Method which receives and store a section (include or exclude) """
         if type == "include":
             self.include = section
         elif type == "exclude":
