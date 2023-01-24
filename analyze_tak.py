@@ -215,15 +215,20 @@ def define_test_cases():
       AND la.hsaId <> 'SE'
       AND ab.tjanstekonsument_id = comp.id
       AND ab.tjanstekontrakt_id = tk.id
-      AND la.id NOT IN (
-          SELECT vv.logiskAdress_id
-          FROM Vagval vv
-          WHERE
-          vv.deleted IS NOT NULL
-            AND vv.tomTidpunkt > CURDATE()
-            AND vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
-            AND vv.logiskAdress_id = ab.logiskAdress_id
-        )
+      AND tk.id NOT IN (
+            SELECT DISTINCT vv.tjanstekontrakt_id
+            FROM Vagval vv,
+                LogiskAdress la2 -- LEO 2023-01-23
+            WHERE
+                vv.deleted IS NOT NULL
+                AND vv.tomTidpunkt > CURDATE()
+                AND vv.logiskAdress_id = la2.id -- LEO 2023-01-23
+                AND (
+                    vv.logiskAdress_id = ab.logiskAdress_id
+                    OR la2.hsaId =  '*' -- LEO 2023-01-23
+                    OR la2.hsaId = 'SE' -- LEO 2023-01-23
+                )
+            )
     ORDER BY ab.id
         """)
 
