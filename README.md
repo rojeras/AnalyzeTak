@@ -7,6 +7,7 @@ Detta script analysera en TAK. Det finns flera sätt att presentera resultatet v
 
 Utdata är dels statistik över antal objekt av olika typ i TAKen, dels ett antal städningsunderlag. 
 
+OBS. Modulen BsJson.py är ett bibliotek som delas mellan bs-json och analyze-tak (identiska filer används).
 ## Exempel på informationssida
 ```
 venv) ➜  analyze-tak_linux git:(develop) ✗ ./analyze_tak.py -t TP_TEST -i
