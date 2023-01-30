@@ -53,19 +53,17 @@ Baserat på informationen som scriptet genererar kan en TAK städas från felakt
  
 
 # Möjliga förbättringar
-* Addera kontroll av att alla standardvägval motsvaras av standardbehörighet.
-  * Uppdatera _authorization_without_a_matching_routing_
+
 * Lägg till information om antal standardbehörigheter och -vägval
 * Ändra benämning av "URL" till "Anropsadress"! En anropsadress består av en url och en tjänstekomponentsreferens.
-* Uppenbarligen är logiken kring delete-kolumnen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 * När JSON-filerna implementeras bör det ev tas fram rollback-filer.
-* Skriv en dokumentation i denna readme.
 * Överväg att lägga på en kontroll över att namnrymderna är korrekta.
 * Lista konsumenter som har både explicit och standardbehörighet till ett vägval.
 * Lista konsumenter som enbart har explicita behörigheter till standardvägval.
 
 
 ## Genomfört
+* Skriv en dokumentation i denna readme.
 * Skriv något om vikten av att kontrollerna sker i rätt ordning.
 * Kolla att URL-er inte baseras på IP-adress utan på DNS-namn.
 * Ändra turordning så att routings och authorizations without - körs först
@@ -82,7 +80,7 @@ Baserat på informationen som scriptet genererar kan en TAK städas från felakt
 
 # Att begrunda
 ## deleted
-Uppenbarliigen är logiken kring delete-kolumen mer komplex (rörig/felaktig) än vad jag initialt trodde. Kontrollen för "deleted" behöver byggas ut. Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
+Se [https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning](https://skl-tp.atlassian.net/wiki/spaces/SKLTP/pages/2344353793/SKLTP+TAK+-+Beskrivning+av+implementation+f+r+borttagning)
 
 Min tolknig av texten är att om deleted-flaggan är NULL så
 indikerar det att posten är borttagen. Alla andra värden står för "FALSE", dvs att posten inte är deleted. Det gör att kontrollen "IS NOT NULL" visar att en post existerar.
