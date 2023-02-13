@@ -226,7 +226,7 @@ def define_test_cases():
                 AND (
                     vv.logiskAdress_id = ab.logiskAdress_id
                     OR la2.hsaId =  '*' -- LEO 2023-01-23
-                    OR la2.hsaId = 'SE' -- LEO 2023-01-23
+                    OR la2.hsaId = 'SE' -- LEO 2023-01-23 
                 )
             )
     ORDER BY ab.id

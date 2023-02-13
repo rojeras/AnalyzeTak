@@ -1,30 +1,36 @@
+-- "authorization_without_a_matching_routing",
+-- "Anropsbehörigheter till icke existerande vägval",
+
 SELECT DISTINCT
-    -- A.id AS 'Id',
-    -- A.integrationsavtal AS 'Integrationsavtal',
+    ab.id AS 'Anropsbehorighet ID',
     comp.hsaId AS 'Tjänstekonsument HSA-id',
     comp.beskrivning AS 'Tjänstekonsument beskrivning',
-    tk.namnrymd AS 'Tjänstekontrakt',
     la.hsaId AS 'Logisk adress',
-    la.beskrivning AS 'Logisk adress beskrivning'
-    -- A.fromTidpunkt AS 'Fr.o.m tidpunkt',
-    -- A.tomTidpunkt AS 'T.o.m tidpunkt'
+    la.beskrivning AS 'Logisk adress beskrivning',
+    tk.namnrymd AS 'Tjänstekontrakt namnrymd'
 FROM
     Anropsbehorighet ab,
     LogiskAdress la,
     Tjanstekomponent comp,
     Tjanstekontrakt tk
 WHERE
-  ab.deleted IS NOT NULL
+    ab.id = 1652 and
+
+    ab.deleted IS NOT NULL
+  AND ab.tomTidpunkt > CURDATE()
   AND ab.logiskAdress_id = la.id
+  AND la.hsaId <> '*'
+  AND la.hsaId <> 'SE'
   AND ab.tjanstekonsument_id = comp.id
   AND ab.tjanstekontrakt_id = tk.id
   AND la.id NOT IN (
-      SELECT vv.logiskAdress_id
-      FROM Vagval vv
-      WHERE
+    SELECT vv.logiskAdress_id
+    FROM Vagval vv
+    WHERE
         vv.deleted IS NOT NULL
-        AND vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
-        AND vv.logiskAdress_id = ab.logiskAdress_id
-    )
+      AND vv.tomTidpunkt > CURDATE()
+      AND vv.tjanstekontrakt_id = ab.tjanstekontrakt_id
+      AND vv.logiskAdress_id = ab.logiskAdress_id
+)
 ORDER BY ab.id
 ;
